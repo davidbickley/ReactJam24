@@ -1,4 +1,7 @@
+// Reaxxion/Map/HexMap
+
 import React, { useEffect, useState, useMemo, useCallback } from "react";
+import useHexStore from "../../store/useHexStore";
 
 const MAX_HEXAGONS = 2000;
 
@@ -59,6 +62,7 @@ const HexGrid = React.memo(({ width, height }) => {
         {hexagons.map(({ key, cx, cy }) => (
           <Hexagon
             key={key}
+            hexKey={key}
             cx={cx}
             cy={cy}
             size={gridState.hexSize}
@@ -71,7 +75,11 @@ const HexGrid = React.memo(({ width, height }) => {
   );
 });
 
-const Hexagon = React.memo(({ cx, cy, size, width, height }) => {
+const Hexagon = React.memo(({ hexKey, cx, cy, size, width, height }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const toggleHex = useHexStore((state) => state.toggleHex);
+  const isClicked = useHexStore((state) => state.clickedHexes.has(hexKey));
+
   const points = useMemo(() => {
     const pts = [];
     for (let i = 0; i < 6; i++) {
@@ -83,7 +91,6 @@ const Hexagon = React.memo(({ cx, cy, size, width, height }) => {
     return pts;
   }, [cx, cy, size]);
 
-  // Check if any point of the hexagon is outside the screen
   const isVisible = useMemo(() => {
     return points.every(
       (point) =>
@@ -97,8 +104,22 @@ const Hexagon = React.memo(({ cx, cy, size, width, height }) => {
 
   const pointsString = points.map((p) => `${p.x},${p.y}`).join(" ");
 
+  const handleClick = () => {
+    toggleHex(hexKey);
+  };
+
+  const fillColor = isClicked ? "blue" : isHovered ? "lightgray" : "white";
+
   return (
-    <polygon points={pointsString} fill="none" stroke="black" strokeWidth="1" />
+    <polygon
+      points={pointsString}
+      fill={fillColor}
+      stroke="black"
+      strokeWidth="1"
+      onClick={handleClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    />
   );
 });
 
