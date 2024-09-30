@@ -1,4 +1,4 @@
-import { Hex } from "./Hexagons";
+import { Hex } from "./HexMath";
 
 export class MapStorage {
     // Constructor

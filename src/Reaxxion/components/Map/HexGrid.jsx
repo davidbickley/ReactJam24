@@ -7,6 +7,8 @@
 
 import React, { useMemo } from "react";
 import Hexagon from "./Hexagon";
+import { Hex, Layout } from "../../HexData/HexMath";
+import { MapStorage } from "../../HexData/MapStorage";
 
 /**
  * @typedef {Object} BoardSize
@@ -37,15 +39,20 @@ const HexGrid = React.memo(
       const hexWidth = hexSize * Math.sqrt(3);
       const hexHeight = hexSize * 2;
 
-      for (let row = 0; row < boardSize.height; row++) {
-        for (let col = 0; col < boardSize.width; col++) {
-          const x = col * hexWidth * 1;
-          const y =
-            row * hexHeight * 1 + (col % 2 === 1 ? hexHeight * 0.433 : 0);
-          const key = `${row}-${col}`;
-          hexs.push({ key, cx: x, cy: y, size: hexSize });
-        }
-      }
+      // Push a grid (existing work)
+      // for (let row = 0; row < boardSize.height; row++) {
+      //   for (let col = 0; col < boardSize.width; col++) {
+      //     const x = col * hexWidth * 1;
+      //     const y =
+      //       row * hexHeight * 1 + (col % 2 === 1 ? hexHeight * 0.433 : 0);
+      //     const key = `${row}-${col}`;
+      //     hexs.push({ key, cx: x, cy: y, size: hexSize });
+      //   }
+      // }
+
+      // Push one hex (testing)
+      // hexs.push({key: '0-0', cx: 10, cy: 10, size: hexSize});
+
       return hexs;
     }, [width, height, boardSize]);
 
