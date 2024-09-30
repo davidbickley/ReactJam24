@@ -3,12 +3,18 @@ import { Hex } from "./Hexagons";
 export class MapStorage {
     // Constructor
     constructor() {
-        
+        hexArray = Array();
         hashmap = new Map();
     }
     addHex(hex) {
-        hashmap.set({ q: hex.q, r: hex.r}, );
+        i = hexArray.push(hex)
+        hashmap.set({ q: hex.q, r: hex.r}, i);
     }
-
-
+    setHex(i, hex) {
+        hexArray[i] = hex;
+        hashmap.set({q: hex.q, r: hex, r}, i);
+    }
+    getHex(q, r) {
+        return hashmap[{q: q, r: r}];
+    }
 }
