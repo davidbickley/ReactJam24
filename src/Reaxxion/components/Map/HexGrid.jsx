@@ -51,7 +51,7 @@ const HexGrid = React.memo(
       // }
 
       // Push one hex (testing)
-      // hexs.push({key: '0-0', cx: 10, cy: 10, size: hexSize});
+      hexs.hexArray.push({key: '0-0', cx: 100, cy: 10, size: hexSize});
 
       return hexs;
     }, [width, height, boardSize]);
@@ -59,7 +59,7 @@ const HexGrid = React.memo(
     return (
       <svg width={width} height={height}>
         <g>
-          {hexagons.map(({ key, cx, cy, size }) => (
+          {hexagons.hexArray.map(({ key, cx, cy, size }) => (
             <Hexagon
               key={key}
               hexKey={key}

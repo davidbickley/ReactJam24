@@ -3,7 +3,7 @@ import { Hex, Layout } from "./HexMath";
 export class MapStorage {
     // Constructor
     constructor(orientation, size, origin) {
-        this.hexArray = new Array();
+        this.hexArray = [];
         this.hexLayout = new Layout(orientation, size, origin);
         this.hexHash = new Map();
     }
