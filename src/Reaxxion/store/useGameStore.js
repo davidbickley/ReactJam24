@@ -38,7 +38,11 @@ const useGameStore = create((set, get) => ({
       setSelectedHex,
       highlightValidMoves,
       clearHighlights,
+      checkGameOver,
+      gameStatus,
     } = get();
+
+    if (gameStatus !== "playing") return;
 
     if (!selectedHex) {
       if (board.get(hexKey) === currentPlayer) {
@@ -50,6 +54,7 @@ const useGameStore = create((set, get) => ({
         if (movePiece(selectedHex, hexKey, currentPlayer)) {
           convertAdjacentPieces(hexKey, currentPlayer);
           switchPlayer();
+          checkGameOver();
         }
       }
       setSelectedHex(null);

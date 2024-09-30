@@ -15,7 +15,6 @@ const GameMap = () => {
     getScores,
     getPlayerColor,
     getGameResultMessage,
-    highlightValidMoves,
     viewport,
     initViewportListeners,
     getBoardSize,
@@ -41,10 +40,9 @@ const GameMap = () => {
     (hexKey) => {
       if (gameStatus === "playing") {
         handleHexSelection(hexKey);
-        highlightValidMoves(hexKey);
       }
     },
-    [gameStatus, handleHexSelection, highlightValidMoves]
+    [gameStatus, handleHexSelection]
   );
 
   const scores = getScores();
@@ -67,7 +65,7 @@ const GameMap = () => {
           alignItems: "center",
         }}
       >
-        <span>Player: {getPlayerColor(currentPlayer)}</span>
+        <span>Current Player: {getPlayerColor(currentPlayer)}</span>
         <span>
           Red: {scores.player1} | Blue: {scores.player2}
         </span>
@@ -75,15 +73,19 @@ const GameMap = () => {
           Board: {boardSize.width}x{boardSize.height}
         </span>
       </div>
-      {gameStatus === "finished" && (
+      {gameStatus === "finished" ? (
         <div style={{ height: "20px", textAlign: "center" }}>
           {getGameResultMessage()}
+        </div>
+      ) : (
+        <div style={{ height: "20px", textAlign: "center" }}>
+          Game in progress
         </div>
       )}
       <div style={{ flex: 1, overflow: "hidden" }}>
         <HexGrid
           width={viewport.width}
-          height={viewport.height - 60} // Reduced from 90 to 60
+          height={viewport.height - 60}
           board={board}
           boardSize={boardSize}
           onHexClick={handleHexClick}

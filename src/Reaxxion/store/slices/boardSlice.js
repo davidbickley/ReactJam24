@@ -44,13 +44,86 @@ export const createBoardSlice = (set, get) => ({
     });
   },
 
+  movePiece: (fromKey, toKey, player) => {
+    const { board, getValidMoves } = get();
+    const validMoves = getValidMoves(fromKey);
+
+    if (validMoves.includes(toKey)) {
+      const newBoard = new Map(board);
+      newBoard.set(toKey, player);
+
+      // If it's a jump move, remove the piece from the original position
+      if (calculateDistance(fromKey, toKey) > 1) {
+        newBoard.delete(fromKey);
+      }
+
+      set({ board: newBoard });
+      return true;
+    }
+    return false;
+  },
+
+  getValidMoves: (hexKey) => {
+    const { board, boardSize } = get();
+    const [row, col] = hexKey.split("-").map(Number);
+    const validMoves = [];
+
+    for (let r = -2; r <= 2; r++) {
+      for (let c = -2; c <= 2; c++) {
+        if (r === 0 && c === 0) continue;
+        const newRow = row + r;
+        const newCol = col + c;
+        if (
+          newRow >= 0 &&
+          newRow < boardSize.height &&
+          newCol >= 0 &&
+          newCol < boardSize.width
+        ) {
+          const newKey = `${newRow}-${newCol}`;
+          if (!board.has(newKey)) {
+            validMoves.push(newKey);
+          }
+        }
+      }
+    }
+
+    return validMoves;
+  },
+
+  convertAdjacentPieces: (hexKey, player) => {
+    const { board, boardSize } = get();
+    const [row, col] = hexKey.split("-").map(Number);
+    const newBoard = new Map(board);
+
+    for (let r = -1; r <= 1; r++) {
+      for (let c = -1; c <= 1; c++) {
+        if (r === 0 && c === 0) continue;
+        const newRow = row + r;
+        const newCol = col + c;
+        if (
+          newRow >= 0 &&
+          newRow < boardSize.height &&
+          newCol >= 0 &&
+          newCol < boardSize.width
+        ) {
+          const adjacentKey = `${newRow}-${newCol}`;
+          if (board.has(adjacentKey) && board.get(adjacentKey) !== player) {
+            newBoard.set(adjacentKey, player);
+          }
+        }
+      }
+    }
+
+    set({ board: newBoard });
+  },
+
   isHexHighlighted: (hexKey) => {
     const { highlightedHexes } = get();
     return highlightedHexes.has(hexKey);
   },
 
   highlightValidMoves: (hexKey) => {
-    const { board, getValidMoves } = get();
+    const { getValidMoves } = get();
     const validMoves = getValidMoves(hexKey);
     set({ highlightedHexes: new Set(validMoves) });
   },
@@ -75,26 +148,28 @@ export const createBoardSlice = (set, get) => ({
   },
 
   convertAdjacentPieces: (hexKey, player) => {
-    const { board } = get();
+    const { board, boardSize } = get();
     const [row, col] = hexKey.split("-").map(Number);
-    const directions = [
-      [-1, -1],
-      [-1, 0],
-      [-1, 1],
-      [0, -1],
-      [0, 1],
-      [1, -1],
-      [1, 0],
-      [1, 1],
-    ];
-
     const newBoard = new Map(board);
-    directions.forEach(([dRow, dCol]) => {
-      const adjKey = `${row + dRow}-${col + dCol}`;
-      if (board.has(adjKey) && board.get(adjKey) !== player) {
-        newBoard.set(adjKey, player);
+
+    for (let r = -1; r <= 1; r++) {
+      for (let c = -1; c <= 1; c++) {
+        if (r === 0 && c === 0) continue;
+        const newRow = row + r;
+        const newCol = col + c;
+        if (
+          newRow >= 0 &&
+          newRow < boardSize.height &&
+          newCol >= 0 &&
+          newCol < boardSize.width
+        ) {
+          const adjacentKey = `${newRow}-${newCol}`;
+          if (board.has(adjacentKey) && board.get(adjacentKey) !== player) {
+            newBoard.set(adjacentKey, player);
+          }
+        }
       }
-    });
+    }
 
     set({ board: newBoard });
   },
@@ -173,6 +248,18 @@ export const createBoardSlice = (set, get) => ({
       newSize.width !== boardSize.width || newSize.height !== boardSize.height
     );
   },
+
+  getScores: () => {
+    const { board } = get();
+    const scores = { player1: 0, player2: 0 };
+
+    for (const player of board.values()) {
+      if (player === 1) scores.player1++;
+      else if (player === 2) scores.player2++;
+    }
+
+    return scores;
+  },
 });
 
 function isValidMove(fromKey, toKey, board) {
@@ -196,6 +283,13 @@ function isJumpMove(fromKey, toKey) {
 
   return rowDiff > 1 || colDiff > 1;
 }
+
+// Helper function to calculate distance between two hexes
+const calculateDistance = (fromKey, toKey) => {
+  const [fromRow, fromCol] = fromKey.split("-").map(Number);
+  const [toRow, toCol] = toKey.split("-").map(Number);
+  return Math.max(Math.abs(fromRow - toRow), Math.abs(fromCol - toCol));
+};
 
 /**
  * Usage example:
