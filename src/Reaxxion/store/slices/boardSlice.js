@@ -25,22 +25,38 @@
  * @returns {Object} The board slice methods and properties
  */
 export const createBoardSlice = (set, get) => ({
-  /** @type {BoardState} */
   board: new Map(),
   boardSize: { width: 7, height: 7 },
   highlightedHexes: new Set(),
 
   initializeBoard: (width, height) => {
     const newBoard = new Map();
+
     newBoard.set("0-0", 1);
-    newBoard.set(`${width - 1}-${height - 1}`, 1);
-    newBoard.set(`0-${height - 1}`, 2);
-    newBoard.set(`${width - 1}-0`, 2);
+    newBoard.set(`${height - 1}-${width - 1}`, 1);
+    newBoard.set(`0-${width - 1}`, 2);
+    newBoard.set(`${height - 1}-0`, 2);
+
     set({
       board: newBoard,
       boardSize: { width, height },
       highlightedHexes: new Set(),
     });
+  },
+
+  isHexHighlighted: (hexKey) => {
+    const { highlightedHexes } = get();
+    return highlightedHexes.has(hexKey);
+  },
+
+  highlightValidMoves: (hexKey) => {
+    const { board, getValidMoves } = get();
+    const validMoves = getValidMoves(hexKey);
+    set({ highlightedHexes: new Set(validMoves) });
+  },
+
+  clearHighlights: () => {
+    set({ highlightedHexes: new Set() });
   },
 
   movePiece: (fromKey, toKey, player) => {
@@ -144,6 +160,18 @@ export const createBoardSlice = (set, get) => ({
   isHexHighlighted: (hexKey) => {
     const { highlightedHexes } = get();
     return highlightedHexes.has(hexKey);
+  },
+
+  /**
+   * Checks if the board needs to be reinitialized due to size change
+   * @param {Object} newSize - The new board size
+   * @returns {boolean} Whether the board needs reinitialization
+   */
+  needsBoardReset: (newSize) => {
+    const { boardSize } = get();
+    return (
+      newSize.width !== boardSize.width || newSize.height !== boardSize.height
+    );
   },
 });
 

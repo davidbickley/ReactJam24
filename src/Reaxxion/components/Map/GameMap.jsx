@@ -18,7 +18,8 @@ const GameMap = () => {
     highlightValidMoves,
     viewport,
     initViewportListeners,
-    getOptimalBoardSize,
+    getBoardSize,
+    needsBoardReset,
   } = useGameStore();
 
   useEffect(() => {
@@ -30,11 +31,11 @@ const GameMap = () => {
   }, [initializeGame, initViewportListeners]);
 
   useEffect(() => {
-    const { width, height } = getOptimalBoardSize();
-    if (width !== boardSize.width || height !== boardSize.height) {
+    const newBoardSize = getBoardSize();
+    if (needsBoardReset(newBoardSize)) {
       initializeGame();
     }
-  }, [viewport, getOptimalBoardSize, boardSize, initializeGame]);
+  }, [viewport, getBoardSize, needsBoardReset, initializeGame]);
 
   const handleHexClick = useCallback(
     (hexKey) => {
@@ -57,20 +58,32 @@ const GameMap = () => {
         flexDirection: "column",
       }}
     >
-      <div style={{ padding: "10px" }}>
-        <h2>Current Player: {getPlayerColor(currentPlayer)}</h2>
-        <p>Red Score: {scores.player1}</p>
-        <p>Blue Score: {scores.player2}</p>
-        <p>Orientation: {viewport.orientation}</p>
-        <p>
-          Board Size: {boardSize.width}x{boardSize.height}
-        </p>
+      <div
+        style={{
+          padding: "5px",
+          height: "40px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <span>Player: {getPlayerColor(currentPlayer)}</span>
+        <span>
+          Red: {scores.player1} | Blue: {scores.player2}
+        </span>
+        <span>
+          Board: {boardSize.width}x{boardSize.height}
+        </span>
       </div>
-      {gameStatus === "finished" && <h3>{getGameResultMessage()}</h3>}
-      <div style={{ flex: 1, overflow: "hidden", padding: "1rem" }}>
+      {gameStatus === "finished" && (
+        <div style={{ height: "20px", textAlign: "center" }}>
+          {getGameResultMessage()}
+        </div>
+      )}
+      <div style={{ flex: 1, overflow: "hidden" }}>
         <HexGrid
-          width={viewport.width - 32} // Subtract 2rem (32px) to account for padding
-          height={viewport.height - 150} // Subtract approximate height of the score area and additional info
+          width={viewport.width}
+          height={viewport.height - 60} // Reduced from 90 to 60
           board={board}
           boardSize={boardSize}
           onHexClick={handleHexClick}

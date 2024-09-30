@@ -9,7 +9,7 @@ const Hexagon = React.memo(({ hexKey, cx, cy, size, player, onClick }) => {
   const points = useMemo(() => {
     const points = [];
     for (let i = 0; i < 6; i++) {
-      const angle = (Math.PI / 3) * i + Math.PI / 3; // Add PI/6 (30 degrees) for flat-top orientation
+      const angle = (Math.PI / 3) * i + Math.PI / 3;
       const x = cx + size * Math.cos(angle);
       const y = cy + size * Math.sin(angle);
       points.push(`${x},${y}`);

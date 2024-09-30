@@ -14,15 +14,47 @@ const useGameStore = create((set, get) => ({
 
   initializeGame: () => {
     const {
-      getOptimalBoardSize,
+      getBoardSize,
       initializeBoard,
       setCurrentPlayer,
       resetGameStatus,
+      clearHighlights,
     } = get();
-    const { width, height } = getOptimalBoardSize();
+    const { width, height } = getBoardSize();
     initializeBoard(width, height);
     setCurrentPlayer(1);
     resetGameStatus();
+    clearHighlights();
+  },
+
+  handleHexSelection: (hexKey) => {
+    const {
+      currentPlayer,
+      selectedHex,
+      board,
+      movePiece,
+      convertAdjacentPieces,
+      switchPlayer,
+      setSelectedHex,
+      highlightValidMoves,
+      clearHighlights,
+    } = get();
+
+    if (!selectedHex) {
+      if (board.get(hexKey) === currentPlayer) {
+        setSelectedHex(hexKey);
+        highlightValidMoves(hexKey);
+      }
+    } else {
+      if (hexKey !== selectedHex) {
+        if (movePiece(selectedHex, hexKey, currentPlayer)) {
+          convertAdjacentPieces(hexKey, currentPlayer);
+          switchPlayer();
+        }
+      }
+      setSelectedHex(null);
+      clearHighlights();
+    }
   },
 
   makeMove: (fromKey, toKey) => {

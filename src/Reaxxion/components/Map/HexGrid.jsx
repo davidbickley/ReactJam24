@@ -7,31 +7,35 @@ const HexGrid = React.memo(
   ({ width, height, board, boardSize, onHexClick }) => {
     const hexagons = useMemo(() => {
       const hexs = [];
-      const gap = 16; // 1rem = 16px (assuming default font size)
+      const padding = 20; // Padding around the grid
+      const availableWidth = width - 2 * padding;
+      const availableHeight = height - 2 * padding;
 
-      // Calculate hex size based on available space and board dimensions
-      const hexWidth = (width - gap * (boardSize.width + 1)) / boardSize.width;
+      // Calculate hex size to fit the screen, with a more aggressive reduction factor
+      const reductionFactor = 0.7; // Reduce size by 30% to ensure all hexagons fit
+      const hexWidth =
+        (availableWidth / (boardSize.width * 0.75 + 0.25)) * reductionFactor;
       const hexHeight =
-        (height - gap * (boardSize.height * 0.75 + 0.25)) /
-        (boardSize.height * 0.75 + 0.25);
+        (availableHeight / (boardSize.height * 0.5 + 0.5)) * reductionFactor;
       const hexSize = Math.min(hexWidth / 2, hexHeight / Math.sqrt(3));
 
       // Calculate grid dimensions
-      const gridWidth = boardSize.width * (hexSize * 2 + gap) - gap;
+      const gridWidth = boardSize.width * hexSize * 1.5 + hexSize / 2;
       const gridHeight =
-        (boardSize.height * 0.75 + 0.25) * (hexSize * Math.sqrt(3) + gap);
+        boardSize.height * hexSize * Math.sqrt(3) * 0.75 +
+        (hexSize * Math.sqrt(3)) / 4;
 
       // Center the grid
       const startX = (width - gridWidth) / 2 + hexSize;
-      const startY = (height - gridHeight) / 2 + (hexSize * Math.sqrt(3)) / 2;
+      const startY = (height - gridHeight) / 5 + (hexSize * Math.sqrt(3)) / 2;
 
       for (let row = 0; row < boardSize.height; row++) {
         for (let col = 0; col < boardSize.width; col++) {
-          const x = startX + col * (hexSize * 1.5 + gap);
+          const x = startX + col * hexSize * 1.5;
           const y =
             startY +
-            row * (hexSize * Math.sqrt(3) + gap) +
-            (col % 2) * ((hexSize * Math.sqrt(3)) / 2 + gap / 2);
+            row * hexSize * Math.sqrt(3) * 1 +
+            (col % 2) * ((hexSize * Math.sqrt(3)) / 2);
           const key = `${row}-${col}`;
           hexs.push({ key, cx: x, cy: y, size: hexSize });
         }
@@ -60,15 +64,3 @@ const HexGrid = React.memo(
 );
 
 export default HexGrid;
-
-/**
- * Usage example:
- *
- * <HexGrid
- *   width={800}
- *   height={600}
- *   board={new Map([['0-0', 1], ['1-1', 2]])}
- *   boardSize={{ width: 7, height: 7 }}
- *   onHexClick={(key) => console.log(`Hexagon ${key} clicked`)}
- * />
- */
