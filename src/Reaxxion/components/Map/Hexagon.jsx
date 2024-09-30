@@ -20,18 +20,18 @@ const Hexagon = React.memo(({ hexKey, cx, cy, size, player, onClick }) => {
   const isSelected = selectedHex === hexKey;
   const isHighlighted = isHexHighlighted(hexKey);
   const fillColor = player ? getPlayerColor(player) : "white";
-  const strokeColor = isSelected
-    ? "yellow"
-    : isHighlighted
-    ? "lightgreen"
-    : "black";
-  const strokeWidth = isSelected || isHighlighted ? 3 : 1;
+  const strokeColor = isSelected ? "yellow" : "black";
+  const strokeWidth = isSelected ? 3 : 1;
+
+  // New highlight style
+  const highlightFill = isHighlighted ? "rgba(144, 238, 144, 0.5)" : fillColor; // Light green with 50% opacity
+  const highlightStroke = isHighlighted ? "black" : strokeColor;
 
   return (
     <polygon
       points={points}
-      fill={fillColor}
-      stroke={strokeColor}
+      fill={highlightFill}
+      stroke={highlightStroke}
       strokeWidth={strokeWidth}
       onClick={onClick}
     />
