@@ -7,8 +7,8 @@
 
 import React, { useMemo } from "react";
 import Hexagon from "./Hexagon";
-import { Hex, Layout } from "../../HexData/HexMath";
 import { MapStorage } from "../../HexData/MapStorage";
+import { Layout, Point } from "../../HexData/HexMath";
 
 /**
  * @typedef {Object} BoardSize
@@ -31,11 +31,11 @@ const HexGrid = React.memo(
      * @type {Array<{key: string, cx: number, cy: number, size: number}>}
      */
     const hexagons = useMemo(() => {
-      const hexs = [];
       const hexSize = Math.min(
         width / (boardSize.width * 2),
         height / (boardSize.height * 1.5)
       );
+      const hexs = new MapStorage(Layout.flat, hexSize, new Point(0,0));
       const hexWidth = hexSize * Math.sqrt(3);
       const hexHeight = hexSize * 2;
 

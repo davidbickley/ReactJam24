@@ -1,20 +1,21 @@
-import { Hex } from "./HexMath";
+import { Hex, Layout } from "./HexMath";
 
 export class MapStorage {
     // Constructor
-    constructor() {
-        hexArray = Array();
-        hashmap = new Map();
+    constructor(orientation, size, origin) {
+        this.hexArray = new Array();
+        this.hexLayout = new Layout(orientation, size, origin);
+        this.hexHash = new Map();
     }
     addHex(hex) {
-        i = hexArray.push(hex)
-        hashmap.set({ q: hex.q, r: hex.r}, i);
+        const i = this.hexArray.push(hex);
+        this.hexHash.set({ q: hex.q, r: hex.r}, i);
     }
     setHex(i, hex) {
-        hexArray[i] = hex;
-        hashmap.set({q: hex.q, r: hex, r}, i);
+        this.hexArray[i] = hex;
+        this.hexHash.set({q: hex.q, r: hex.r}, i);
     }
     getHex(q, r) {
-        return hashmap[{q: q, r: r}];
+        return this.hexHash[{q: q, r: r}];
     }
 }
