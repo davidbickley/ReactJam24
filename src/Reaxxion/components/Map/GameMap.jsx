@@ -1,23 +1,10 @@
-// Reaxxion/components/Map/GameMap.jsx
+// src/components/Map/GameMap.jsx
 
-/**
- * GameMap component for rendering the main game interface.
- * This component manages the game state and renders the HexGrid along with game information.
- */
-
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useCallback } from "react";
 import HexGrid from "./HexGrid";
 import useGameStore from "../../store/useGameStore";
 
-/**
- * @param {Object} props - Component props
- * @param {string} [props.width="100%"] - Width of the game map container
- * @param {string} [props.height="100%"] - Height of the game map container
- */
-const GameMap = ({ width = "100%", height = "100%" }) => {
-  /** @type {{width: number, height: number}} */
-  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-
+const GameMap = () => {
   const {
     initializeGame,
     board,
@@ -28,58 +15,62 @@ const GameMap = ({ width = "100%", height = "100%" }) => {
     getScores,
     getPlayerColor,
     getGameResultMessage,
+    highlightValidMoves,
+    viewport,
+    initViewportListeners,
+    getOptimalBoardSize,
   } = useGameStore();
 
-  // Initialize the game board
   useEffect(() => {
-    initializeGame(7, 7); // Initialize a 7x7 board
-    // TODO: Make this dynamic based on viewport dimensions
-  }, [initializeGame]);
-
-  // Update dimensions on window resize
-  useEffect(() => {
-    const updateDimensions = () => {
-      const container = document.getElementById("hex-map-container");
-      if (container) {
-        setDimensions({
-          width: container.clientWidth,
-          height: container.clientHeight,
-        });
-      }
+    initializeGame();
+    const cleanupViewportListeners = initViewportListeners();
+    return () => {
+      cleanupViewportListeners();
     };
+  }, [initializeGame, initViewportListeners]);
 
-    updateDimensions();
-    window.addEventListener("resize", updateDimensions);
-    return () => window.removeEventListener("resize", updateDimensions);
-  }, []);
+  useEffect(() => {
+    const { width, height } = getOptimalBoardSize();
+    if (width !== boardSize.width || height !== boardSize.height) {
+      initializeGame();
+    }
+  }, [viewport, getOptimalBoardSize, boardSize, initializeGame]);
 
-  /**
-   * Handle hex click events
-   * @param {string} hexKey - The key of the clicked hexagon
-   */
   const handleHexClick = useCallback(
     (hexKey) => {
       if (gameStatus === "playing") {
         handleHexSelection(hexKey);
+        highlightValidMoves(hexKey);
       }
     },
-    [gameStatus, handleHexSelection]
+    [gameStatus, handleHexSelection, highlightValidMoves]
   );
 
   const scores = getScores();
 
   return (
-    <div>
-      <div>
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div style={{ padding: "10px" }}>
         <h2>Current Player: {getPlayerColor(currentPlayer)}</h2>
         <p>Red Score: {scores.player1}</p>
         <p>Blue Score: {scores.player2}</p>
+        <p>Orientation: {viewport.orientation}</p>
+        <p>
+          Board Size: {boardSize.width}x{boardSize.height}
+        </p>
       </div>
       {gameStatus === "finished" && <h3>{getGameResultMessage()}</h3>}
-      <div id="hex-map-container" style={{ width, height }}>
+      <div style={{ flex: 1, overflow: "hidden", padding: "1rem" }}>
         <HexGrid
-          width={dimensions.width}
-          height={dimensions.height}
+          width={viewport.width - 32} // Subtract 2rem (32px) to account for padding
+          height={viewport.height - 150} // Subtract approximate height of the score area and additional info
           board={board}
           boardSize={boardSize}
           onHexClick={handleHexClick}
@@ -90,9 +81,3 @@ const GameMap = ({ width = "100%", height = "100%" }) => {
 };
 
 export default React.memo(GameMap);
-
-/**
- * Usage example:
- *
- * <GameMap width="100%" height="80vh" />
- */

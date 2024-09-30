@@ -4,16 +4,25 @@ import { create } from "zustand";
 import { createBoardSlice } from "./slices/boardSlice";
 import { createPlayerSlice } from "./slices/playerSlice";
 import { createGameStatusSlice } from "./slices/gameStatusSlice";
+import { createViewportSlice } from "./slices/viewportSlice";
 
 const useGameStore = create((set, get) => ({
   ...createBoardSlice(set, get),
   ...createPlayerSlice(set, get),
   ...createGameStatusSlice(set, get),
+  ...createViewportSlice(set, get),
 
-  initializeGame: (width, height) => {
-    get().initializeBoard(width, height);
-    get().setCurrentPlayer(1);
-    get().resetGameStatus();
+  initializeGame: () => {
+    const {
+      getOptimalBoardSize,
+      initializeBoard,
+      setCurrentPlayer,
+      resetGameStatus,
+    } = get();
+    const { width, height } = getOptimalBoardSize();
+    initializeBoard(width, height);
+    setCurrentPlayer(1);
+    resetGameStatus();
   },
 
   makeMove: (fromKey, toKey) => {
