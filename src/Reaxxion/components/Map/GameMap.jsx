@@ -32,7 +32,7 @@ const GameMap = ({ width = "100%", height = "100%" }) => {
 
   // Initialize the game board
   useEffect(() => {
-    initializeGame(7, 7); // Initialize a 7x7 board
+    initializeGame(2, 2); // Initialize a 7x7 board
     // TODO: Make this dynamic based on viewport dimensions
   }, [initializeGame]);
 
