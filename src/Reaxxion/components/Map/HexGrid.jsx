@@ -32,7 +32,7 @@ const HexGrid = React.memo(
       height / (boardSize.height * 1.5)
     );
 
-    const mapStorage = new MapStorage(Layout.flat, hexSize, new Point(0, 0));
+    const mapStorage = new MapStorage(Layout.flat, { x: hexSize, y: hexSize }, new Point(0, 0));
     mapStorage.createMap(boardSize);
 
     return (
@@ -42,6 +42,7 @@ const HexGrid = React.memo(
             [...mapStorage.hexHash.keys()].map((key) => (
               // A key is an object with a q and an r
               <Hexagon
+                key={`${key.q}-${key.r}`}
                 hexKey={`${key.q}-${key.r}`}
                 cx={mapStorage.hexLayout.hexToPixel({ q: key.q, r: key.r, s: -key.q - key.r}).x}
                 cy={mapStorage.hexLayout.hexToPixel({ q: key.q, r: key.r, s: -key.q - key.r}).y}
