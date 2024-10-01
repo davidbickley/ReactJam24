@@ -26,50 +26,30 @@ import { Layout, Point } from "../../HexData/HexMath";
  */
 const HexGrid = React.memo(
   ({ width, height, board, boardSize, onHexClick }) => {
-    /**
-     * Calculate hexagon positions and sizes based on board dimensions.
-     * @type {Array<{key: string, cx: number, cy: number, size: number}>}
-     */
-    const hexagons = useMemo(() => {
-      const hexSize = Math.min(
-        width / (boardSize.width * 2),
-        height / (boardSize.height * 1.5)
-      );
-      const hexs = new MapStorage(Layout.flat, hexSize, new Point(0,0));
-      const hexWidth = hexSize * Math.sqrt(3);
-      const hexHeight = hexSize * 2;
 
-      // Push a grid (existing work)
-      // for (let row = 0; row < boardSize.height; row++) {
-      //   for (let col = 0; col < boardSize.width; col++) {
-      //     const x = col * hexWidth * 1;
-      //     const y =
-      //       row * hexHeight * 1 + (col % 2 === 1 ? hexHeight * 0.433 : 0);
-      //     const key = `${row}-${col}`;
-      //     hexs.push({ key, cx: x, cy: y, size: hexSize });
-      //   }
-      // }
+    const hexSize = Math.min(
+      width / (boardSize.width * 2),
+      height / (boardSize.height * 1.5)
+    );
 
-      // Push one hex (testing)
-      hexs.hexArray.push({key: '0-0', cx: 100, cy: 10, size: hexSize});
-
-      return hexs;
-    }, [width, height, boardSize]);
+    const mapStorage = new MapStorage(Layout.flat, hexSize, new Point(0, 0));
+    mapStorage.createMap(boardSize);
 
     return (
       <svg width={width} height={height}>
         <g>
-          {hexagons.hexArray.map(({ key, cx, cy, size }) => (
-            <Hexagon
-              key={key}
-              hexKey={key}
-              cx={cx}
-              cy={cy}
-              size={size}
-              player={board.get(key)}
-              onClick={() => onHexClick(key)}
-            />
-          ))}
+          {
+            [...mapStorage.hexHash.keys()].map((key) => (
+              // A key is an object with a q and an r
+              <Hexagon
+                hexKey={`${key.q}-${key.r}`}
+                cx={mapStorage.hexLayout.hexToPixel({ q: key.q, r: key.r, s: -key.q - key.r}).x}
+                cy={mapStorage.hexLayout.hexToPixel({ q: key.q, r: key.r, s: -key.q - key.r}).y}
+                size={mapStorage.hexLayout.size}
+                player={board.get(key)}
+                onClick={() => onHexClick(key)}
+              />
+            ))}
         </g>
       </svg>
     );
