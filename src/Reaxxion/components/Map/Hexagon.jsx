@@ -7,27 +7,25 @@
 
 import React from "react";
 import useGameStore from "../../store/useGameStore";
+import { Layout } from "../../HexData/HexMath";
 
 /**
  * @param {Object} props - Component props
  * @param {string} props.hexKey - Unique identifier for the hexagon
- * @param {number} props.cx - X-coordinate of the hexagon's center
- * @param {number} props.cy - Y-coordinate of the hexagon's center
+ * @param {number} props.q - first of 3 hex coords
+ * @param {number} props.r - second of 3 hex coords
  * @param {number} props.size - Size of the hexagon
  * @param {number|null} props.player - Player occupying the hexagon (1, 2, or null)
  * @param {Function} props.onClick - Click handler for the hexagon
+ * @param {Layout} props.layout - Hex layout data for corner point calculations
  */
-const Hexagon = React.memo(({ hexKey, cx, cy, size, player, onClick }) => {
+const Hexagon = React.memo(({ hexKey, q, r, size, player, onClick, layout }) => {
   const { getPlayerColor, selectedHex } = useGameStore();
 
-  // Generate hexagon points
-  const points = [];
-  for (let i = 0; i < 6; i++) {
-    const angle = (Math.PI / 3) * i;
-    const x = cx + size * Math.cos(angle);
-    const y = cy + size * Math.sin(angle);
-    points.push(`${x},${y}`);
-  }
+  // Calculate hexagon corner points
+  const points = layout.polygonCorners({q: q, r: r, s: -q - r}).map((point) => {
+    return `${point.x},${point.y}`;
+  })
 
   const isSelected = selectedHex === hexKey;
   const fillColor = player ? getPlayerColor(player) : "white";

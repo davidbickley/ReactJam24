@@ -44,11 +44,14 @@ const HexGrid = React.memo(
               <Hexagon
                 key={`${key.q}-${key.r}`}
                 hexKey={`${key.q}-${key.r}`}
-                cx={mapStorage.hexLayout.hexToPixel({ q: key.q, r: key.r, s: -key.q - key.r}).x}
-                cy={mapStorage.hexLayout.hexToPixel({ q: key.q, r: key.r, s: -key.q - key.r}).y}
+                //cx={mapStorage.hexLayout.hexToPixel({ q: key.q, r: key.r, s: -key.q - key.r}).x}
+                //cy={mapStorage.hexLayout.hexToPixel({ q: key.q, r: key.r, s: -key.q - key.r}).y}
+                q={key.q}
+                r={key.r}
                 size={mapStorage.hexLayout.size}
                 player={board.get(key)}
                 onClick={() => onHexClick(key)}
+                layout={mapStorage.hexLayout}
               />
             ))}
         </g>
