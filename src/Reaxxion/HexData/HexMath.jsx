@@ -1,3 +1,5 @@
+// Reaxxion/HexData/MapStorage.jsx
+
 // Generated code -- CC0 -- No Rights Reserved -- http://www.redblobgames.com/grids/hexagons/
 export class Point {
     constructor(x, y) {

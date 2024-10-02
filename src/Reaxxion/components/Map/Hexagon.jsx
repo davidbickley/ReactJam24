@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react";
 import useGameStore from "../../store/useGameStore";
+import Marker from "../Marker/Marker";
 
 const Hexagon = React.memo(({ hexKey, cx, cy, size, player, onClick }) => {
   const { getPlayerColor, selectedHex, isHexHighlighted } = useGameStore();
@@ -23,32 +24,30 @@ const Hexagon = React.memo(({ hexKey, cx, cy, size, player, onClick }) => {
   const strokeColor = isSelected ? "yellow" : "black";
   const strokeWidth = isSelected ? 3 : 1;
 
-  // New highlight style
-  const highlightFill = isHighlighted ? "rgba(144, 238, 144, 0.5)" : fillColor; // Light green with 50% opacity
+  const highlightFill = isHighlighted ? "rgba(144, 238, 144, 0.5)" : fillColor;
   const highlightStroke = isHighlighted ? "black" : strokeColor;
 
+  // Calculate the position for the Marker
+  const markerX = cx - size / 2;
+  const markerY = cy - size / 2;
+
   return (
-    <polygon
-      points={points}
-      fill={highlightFill}
-      stroke={highlightStroke}
-      strokeWidth={strokeWidth}
-      onClick={onClick}
-    />
+    // Wrap the polygon and Marker in a group (g) element
+    <g onClick={onClick}>
+      <polygon
+        points={points}
+        fill={highlightFill}
+        stroke={highlightStroke}
+        strokeWidth={strokeWidth}
+      />
+      {/* Render the Marker component if a player has claimed this hex */}
+      {player && (
+        <foreignObject x={markerX} y={markerY} width={size} height={size}>
+          <Marker player={player} size={size} />
+        </foreignObject>
+      )}
+    </g>
   );
 });
 
 export default Hexagon;
-
-/**
- * Usage example:
- *
- * <Hexagon
- *   hexKey="0-0"
- *   cx={100}
- *   cy={100}
- *   size={50}
- *   player={1}
- *   onClick={() => console.log("Hexagon clicked")}
- * />
- */
