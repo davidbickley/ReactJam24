@@ -1,11 +1,8 @@
 // Reaxxion/HexData/MapStorage.jsx
 
-import { Layout } from "./HexMath";
-
 export class MapStorage {
   // Constructor
-  constructor(orientation, size, origin) {
-    this.hexLayout = new Layout(orientation, size, origin);
+  constructor() {
     this.hexHash = new Map();
   }
   setHex(q, r, s) {

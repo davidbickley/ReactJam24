@@ -1,30 +1,12 @@
 // src/store/slices/boardSlice.js
 
 import { Layout, Point } from "../../HexData/HexMath";
+import { MapStorage } from "../../HexData/MapStorage";
 
 
 /**
  * Board slice for the Ataxx game state management.
  * Handles the game board data, move validation, and piece conversion.
- */
-
-/**
- * @typedef {Object} hexKey
- * @property {Number} q - The first axial coordinate
- * @property {Number} r - The second axial coordinate
- */
-
-/** We probably don't want to keep it this way but it's good for getting started.
- * @typedef {Object} boardSize
- * @property {Number} width - Board width in hexagons
- * @property {Number} height - Board height in hexagons
- */
-
-/**
- * @typedef {Object} BoardState
- * @property {Layout} mapLayout - The rules by which the game builds the map- orientation, size, origin
- * @property {Map<hexKey, Number>} mapStorage - The game board stored as a Map
- * @property {Set<hexKey>} highlightedHexes - Set of hexagon keys to highlight
  */
 
 /**
@@ -35,20 +17,26 @@ import { Layout, Point } from "../../HexData/HexMath";
  */
 export const createBoardSlice = (set, get) => ({
   mapLayout: new Layout(Layout.flat, 50, Point(0,0)),
-  mapStorage: new Map(),
+  mapStorage: new MapStorage(),
   highlightedHexes: new Set(),
 
   initializeBoard: (width, height) => {
-    
+    // Initialize a layout to be given to the mapLayout state value
+    // TODO: All of its parameters are hard coded right now but we can/should change that
+    const newLayout = new Layout(Layout.flat, 50, new Point(0, 0));
+
+    // Initialize a map to be given to the mapStorage state value
     const newStorage = new Map();
 
+    // Temporary hard-coded map formation algorithm
     for (let q = 0; q < height; q++) {
       for (let r = 0; r < width; r++) {
-        newBoard.set(q, r, -q - r);
+        newStorage.set(q, r, -q - r);
       }
     }
 
     set({
+      mapLayout: newLayout,
       mapStorage: newStorage,
       boardSize: { width, height },
       highlightedHexes: new Set(),
