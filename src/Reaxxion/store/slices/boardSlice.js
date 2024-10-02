@@ -1,21 +1,30 @@
 // src/store/slices/boardSlice.js
 
+import { Layout, Point } from "../../HexData/HexMath";
+
+
 /**
  * Board slice for the Ataxx game state management.
- * Handles the game board representation, move validation, and piece conversion.
+ * Handles the game board data, move validation, and piece conversion.
  */
 
 /**
- * @typedef {Object} BoardSize
- * @property {number} width - The width of the board
- * @property {number} height - The height of the board
+ * @typedef {Object} hexKey
+ * @property {Number} q - The first axial coordinate
+ * @property {Number} r - The second axial coordinate
+ */
+
+/** We probably don't want to keep it this way but it's good for getting started.
+ * @typedef {Object} boardSize
+ * @property {Number} width - Board width in hexagons
+ * @property {Number} height - Board height in hexagons
  */
 
 /**
  * @typedef {Object} BoardState
- * @property {Map<string, number>} board - The game board represented as a Map
- * @property {BoardSize} boardSize - The size of the game board
- * @property {Set<string>} highlightedHexes - Set of hexagon keys to highlight
+ * @property {Layout} mapLayout - The rules by which the game builds the map- orientation, size, origin
+ * @property {Map<hexKey, Number>} mapStorage - The game board stored as a Map
+ * @property {Set<hexKey>} highlightedHexes - Set of hexagon keys to highlight
  */
 
 /**
@@ -25,22 +34,32 @@
  * @returns {Object} The board slice methods and properties
  */
 export const createBoardSlice = (set, get) => ({
-  board: new Map(),
-  boardSize: { width: 7, height: 7 },
+  mapLayout: new Layout(Layout.flat, 50, Point(0,0)),
+  mapStorage: new Map(),
   highlightedHexes: new Set(),
 
   initializeBoard: (width, height) => {
-    const newBoard = new Map();
+    
+    const newStorage = new Map();
 
-    newBoard.set("0-0", 1);
-    newBoard.set(`${height - 1}-${width - 1}`, 1);
-    newBoard.set(`0-${width - 1}`, 2);
-    newBoard.set(`${height - 1}-0`, 2);
+    for (let q = 0; q < height; q++) {
+      for (let r = 0; r < width; r++) {
+        newBoard.set(q, r, -q - r);
+      }
+    }
 
     set({
-      board: newBoard,
+      mapStorage: newStorage,
       boardSize: { width, height },
       highlightedHexes: new Set(),
+    });
+  },
+
+  resizeBoard: (size) => {
+    const newLayout = new Layout(Layout.flat, size, Point(0,0));
+
+    set({
+      mapLayout: newLayout
     });
   },
 
