@@ -1,5 +1,6 @@
 // src/store/slices/boardSlice.js
 
+import { getValue } from "@testing-library/user-event/dist/utils";
 import { Hex, Layout, Point } from "../../HexData/HexMath";
 
 /**
@@ -95,27 +96,19 @@ export const createBoardSlice = (set, get) => ({
     return validMoves;
   },
 
-  // /**
-  //  * Converts adjacent pieces to the current player's color
-  //  * @param {string} hexKey - The key of the hex that was just placed
-  //  * @param {number} player - The current player (1 or 2)
-  //  */
-  // convertAdjacentPieces: (hexKey, player) => {
-  //   const { board } = get();
-  //   const [row, col] = hexKey.split("-").map(Number);
-  //   const newBoard = new Map(board);
+  /**
+   * Converts adjacent pieces to the current player's color
+   * @param {string} hexKey - The key of the hex that was just placed
+   * @param {number} player - The current player (1 or 2)
+   */
+  convertAdjacentPieces: (hexKey, player) => {
+    const { board, getValidMoves } = get();
+    const newBoard = new Map(board);
 
-  //   for (let r = -1; r <= 1; r++) {
-  //     for (let c = -1; c <= 1; c++) {
-  //       if (r === 0 && c === 0) continue;
-  //       const newRow = row + r;
-  //       const newCol = col + c;
-  //       const adjacentKey = `${newRow}-${newCol}`;
-  //       if (board.has(adjacentKey) && board.get(adjacentKey) !== player) {
-  //         newBoard.set(adjacentKey, player);
-  //       }
-  //     }
-  //   }
+    for (otherKey in getValidMoves(hexKey)) {
+
+    }
+    }
 
   //   set({ board: newBoard });
   // },
@@ -309,6 +302,31 @@ const calculateDistance = (fromKey, toKey) => {
   const toHex = new Hex(toKey.q, toKey.r, -toKey.q - toKey.r);
   return fromHex.distance(toHex);
 };
+
+/**
+ * Returns the valid hexes that neighbor the given hex
+ * @param {number} hexKey - The row and column of the hex
+ * @param {Object} boardSize - The size of the board
+ * @returns {Object[]} - Array of hexKeys that are neighbors
+ */
+const getNeighbors = (hexKey, boardSize) => {
+  // Initialize the array of neighbors
+  const neighbors = [];
+
+  // Make a hex object from the hex key
+  const testHex = new Hex(hexKey.q, hexKey.r, -hexKey.q - hexKey.r);
+  
+  // Use the hex object's neighbor method to get neighbors,
+  // and validate that they are real hexes
+  for (let i = 0; i < 6; i++){
+    const neighbor = new Hex(testHex.neighbor(Hex.directions[i]));
+    if (isValidHex({q: neighbor.q, r: neighbor.r }, boardSize)) {
+      neighbors.push({q: neighbor.q, r: neighbor.r});
+    }
+  }
+  
+  return neighbors;
+}
 
 /**
  * Usage example:
