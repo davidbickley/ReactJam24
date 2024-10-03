@@ -129,17 +129,6 @@ export const createBoardSlice = (set, get) => ({
     set({ highlightedHexes: new Set() });
   },
 
-  //   hasValidMoves: (player) => {
-  //     const { board } = get();
-  //     return Array.from(board.entries()).some(([key, piecePlayer]) => {
-  //       if (piecePlayer === player) {
-  //         const validMoves = get().getValidMoves(key);
-  //         return validMoves.length > 0;
-  //       }
-  //       return false;
-  //     });
-  //   },
-
   //   /**
   //    * Highlights hexagons within two spaces of the selected hexagon
   //    * @param {string|null} hexKey - The key of the selected hexagon, or null to clear highlights
