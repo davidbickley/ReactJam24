@@ -159,31 +159,9 @@ export const createBoardSlice = (set, get) => ({
 
 });
 
-// function isValidMove(fromKey, toKey, board) {
-//   if (board.has(toKey)) return false;
-
-//   const [fromRow, fromCol] = fromKey.split("-").map(Number);
-//   const [toRow, toCol] = toKey.split("-").map(Number);
-
-//   const rowDiff = Math.abs(toRow - fromRow);
-//   const colDiff = Math.abs(toCol - fromCol);
-
-//   return rowDiff <= 2 && colDiff <= 2 && !(rowDiff === 0 && colDiff === 0);
-// }
-
-// function isJumpMove(fromKey, toKey) {
-//   const [fromRow, fromCol] = fromKey.split("-").map(Number);
-//   const [toRow, toCol] = toKey.split("-").map(Number);
-
-//   const rowDiff = Math.abs(toRow - fromRow);
-//   const colDiff = Math.abs(toCol - fromCol);
-
-//   return rowDiff > 1 || colDiff > 1;
-// }
-
 /**
  * Checks if a hex is within the board boundaries
- * @param {number} hexKey - The row and column of the hex
+ * @param {Object} hexKey - The row and column of the hex
  * @param {Object} boardSize - The size of the board
  * @returns {boolean} Whether the hex is valid
  */
@@ -193,7 +171,11 @@ function isValidHex(hexKey, boardSize) {
   );
 }
 
-// Helper function to calculate distance between two hexes
+/** Helper function to calculate distance between two hexes
+ * @param {Object} fromKey - The row and column of the 'from' hex
+ * @param {Object} toKey - The row and column of the 'to' hex
+ * @returns {number} - The distance in hexes from the 'from' hex to the 'to' hex
+ */
 const calculateDistance = (fromKey, toKey) => {
   const fromHex = new Hex(fromKey.q, fromKey.r, -fromKey.q - fromKey.r);
   const toHex = new Hex(toKey.q, toKey.r, -toKey.q - toKey.r);
