@@ -55,7 +55,7 @@ export const createBoardSlice = (set, get) => ({
 
   resizeBoard: (size) => {
     const { mapLayout } = get();
-    const newLayout = mapLayout;
+    const newLayout = new Layout(mapLayout);
     newLayout.size = size;
 
     set({
@@ -82,40 +82,18 @@ export const createBoardSlice = (set, get) => ({
     return false;
   },
 
-  // /**
-  //  * Gets valid moves for a given hex
-  //  * @param {string} hexKey - The key of the hex to get moves for
-  //  * @returns {string[]} Array of valid move hex keys
-  //  */
-  // getValidMoves: (hexKey) => {
-  //   const { board, boardSize } = get();
-  //   const [row, col] = hexKey.split("-").map(Number);
-  //   const validMoves = [];
+  getValidMoves: (hexKey) => {
+    const { board, mapStorage } = get();
 
-  //   // Check all hexes within a two-tile radius
-  //   for (let dr = -2; dr <= 2; dr++) {
-  //     for (let dc = -2; dc <= 2; dc++) {
-  //       // Skip the current hex
-  //       if (dr === 0 && dc === 0) continue;
+    // Check all hexes within a two-tile radius
+    const validMoves = mapStorage.keys().filter((otherKey) => {
+      if (isValidHex(otherKey) && !board.has(otherKey) && hexKey.distance(otherKey <= 2)) {
+        return true;
+      }
+    });
 
-  //       // Calculate the actual hexagonal distance
-  //       const distance = (Math.abs(dr) + Math.abs(dc) + Math.abs(dr + dc)) / 2;
-
-  //       // Only include hexes within 2 steps
-  //       if (distance <= 2) {
-  //         const newRow = row + dr;
-  //         const newCol = col + dc;
-  //         const newKey = `${newRow}-${newCol}`;
-
-  //         if (isValidHex(newRow, newCol, boardSize) && !board.has(newKey)) {
-  //           validMoves.push(newKey);
-  //         }
-  //       }
-  //     }
-  //   }
-
-  //   return validMoves;
-  // },
+    return validMoves;
+  },
 
   // /**
   //  * Converts adjacent pieces to the current player's color
@@ -313,18 +291,17 @@ export const createBoardSlice = (set, get) => ({
 //   return rowDiff > 1 || colDiff > 1;
 // }
 
-// /**
-//  * Checks if a hex is within the board boundaries
-//  * @param {number} row - The row of the hex
-//  * @param {number} col - The column of the hex
-//  * @param {Object} boardSize - The size of the board
-//  * @returns {boolean} Whether the hex is valid
-//  */
-// function isValidHex(row, col, boardSize) {
-//   return (
-//     row >= 0 && row < boardSize.height && col >= 0 && col < boardSize.width
-//   );
-// }
+/**
+ * Checks if a hex is within the board boundaries
+ * @param {number} hexKey - The row and column of the hex
+ * @param {Object} boardSize - The size of the board
+ * @returns {boolean} Whether the hex is valid
+ */
+function isValidHex(hexKey, boardSize) {
+  return (
+    0 <= hexKey.q && hexKey.q < boardSize.height && 0 <= hexKey.r && hexKey.r < boardSize.width 
+  );
+}
 
 // Helper function to calculate distance between two hexes
 const calculateDistance = (fromKey, toKey) => {

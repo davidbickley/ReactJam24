@@ -14,7 +14,7 @@ const HexGrid = React.memo((onHexClick) => {
     <svg width={boardSize.width} height={boardSize.height}>
       <g>
         {
-          [mapStorage.hexHash.keys()].map((key) => {
+          mapStorage.keys().map((key) => {
             <Hexagon
               key={`${key.q}-${key.r}`}
               hexKey={`${key.q}-${key.r}`}
