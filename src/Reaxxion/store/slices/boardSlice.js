@@ -107,7 +107,7 @@ export const createBoardSlice = (set, get) => ({
 
     for (let otherKey in getNeighbors(hexKey, boardSize)) {
       if (board.has(otherKey)) {
-        newBoard.set({q: otherKey.q, r: otherKey.r}, player);
+        newBoard.set({ q: otherKey.q, r: otherKey.r }, player);
       }
     }
 
@@ -128,30 +128,6 @@ export const createBoardSlice = (set, get) => ({
   clearHighlights: () => {
     set({ highlightedHexes: new Set() });
   },
-
-  //   /**
-  //    * Highlights hexagons within two spaces of the selected hexagon
-  //    * @param {string|null} hexKey - The key of the selected hexagon, or null to clear highlights
-  //    */
-  //   highlightValidMoves: (hexKey) => {
-  //     if (!hexKey) {
-  //       set({ highlightedHexes: new Set() });
-  //       return;
-  //     }
-
-  //     const validMoves = get().getValidMoves(hexKey);
-  //     set({ highlightedHexes: new Set(validMoves) });
-  //   },
-
-  //   /**
-  //    * Checks if a hexagon is highlighted
-  //    * @param {string} hexKey - The key of the hexagon to check
-  //    * @returns {boolean} Whether the hexagon is highlighted
-  //    */
-  //   isHexHighlighted: (hexKey) => {
-  //     const { highlightedHexes } = get();
-  //     return highlightedHexes.has(hexKey);
-  //   },
 
   //   /**
   //    * Checks if the board needs to be reinitialized due to size change
