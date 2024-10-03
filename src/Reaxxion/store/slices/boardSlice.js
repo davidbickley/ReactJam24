@@ -114,20 +114,20 @@ export const createBoardSlice = (set, get) => ({
     set({ board: newBoard });
   },
 
-  // isHexHighlighted: (hexKey) => {
-  //   const { highlightedHexes } = get();
-  //   return highlightedHexes.has(hexKey);
-  // },
+  isHexHighlighted: (hexKey) => {
+    const { highlightedHexes } = get();
+    return highlightedHexes.has(hexKey);
+  },
 
-  // highlightValidMoves: (hexKey) => {
-  //   const { getValidMoves } = get();
-  //   const validMoves = getValidMoves(hexKey);
-  //   set({ highlightedHexes: new Set(validMoves) });
-  // },
+  highlightValidMoves: (hexKey) => {
+    const { getValidMoves } = get();
+    const validMoves = getValidMoves(hexKey);
+    set({ highlightedHexes: new Set(validMoves) });
+  },
 
-  // clearHighlights: () => {
-  //   set({ highlightedHexes: new Set() });
-  // },
+  clearHighlights: () => {
+    set({ highlightedHexes: new Set() });
+  },
 
   // movePiece: (fromKey, toKey, player) => {
   //   const { board, getValidMoves } = get();
