@@ -13,19 +13,19 @@ import PropTypes from "prop-types";
  */
 const Marker = ({ player, size }) => {
   // Scale the marker size relative to the hexagon size
-  const markerSize = size * 0.4;
+  const markerSize = size * 1;
 
   // Define player-specific styles
   const styles = {
-    1: { fill: "#FF6B6B", stroke: "#FF0000" },
-    2: { fill: "#4ECDC4", stroke: "#00FFFF" },
+    1: { fill: "#FF6B6B", stroke: "#FFF" },
+    2: { fill: "#4ECDC4", stroke: "#FFF" },
   };
 
   const style = styles[player] || styles[1]; // Default to player 1 style if invalid player number
 
   return (
     <svg width={markerSize} height={markerSize} viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="40" {...style} strokeWidth="10" />
+      <circle cx="50" cy="50" r="40" {...style} strokeWidth="5" />
       <text
         x="50"
         y="50"
