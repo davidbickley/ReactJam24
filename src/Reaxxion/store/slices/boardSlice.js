@@ -129,17 +129,17 @@ export const createBoardSlice = (set, get) => ({
     set({ highlightedHexes: new Set() });
   },
 
-  //   /**
-  //    * Checks if the board needs to be reinitialized due to size change
-  //    * @param {Object} newSize - The new board size
-  //    * @returns {boolean} Whether the board needs reinitialization
-  //    */
-  //   needsBoardReset: (newSize) => {
-  //     const { boardSize } = get();
-  //     return (
-  //       newSize.width !== boardSize.width || newSize.height !== boardSize.height
-  //     );
-  //   },
+  /**
+   * Checks if the board needs to be reinitialized due to size change
+   * @param {Object} newSize - The new board size
+   * @returns {boolean} Whether the board needs reinitialization
+   */
+  needsBoardReset: (newSize) => {
+    const { boardSize } = get();
+    return (
+      newSize.width !== boardSize.width || newSize.height !== boardSize.height
+    );
+  },
 
   //   getScores: () => {
   //     const { board } = get();
