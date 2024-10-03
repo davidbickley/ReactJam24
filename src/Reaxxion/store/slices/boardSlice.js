@@ -1,6 +1,6 @@
 // src/store/slices/boardSlice.js
 
-import { Layout, Point } from "../../HexData/HexMath";
+import { Hex, Layout, Point } from "../../HexData/HexMath";
 
 /**
  * Board slice for the Ataxx game state management.
@@ -34,7 +34,7 @@ export const createBoardSlice = (set, get) => ({
     // Temporary hard-coded map formation algorithm
     for (let q = 0; q < height; q++) {
       for (let r = 0; r < width; r++) {
-        newStorage.set(q, r, -q - r);
+        newStorage.set({ q: q, r: r }, -q - r);
       }
     }
 
@@ -42,11 +42,6 @@ export const createBoardSlice = (set, get) => ({
     const newBoard = new Map();
 
     // Temporarily hard-coded board player setter
-    for (let q = 0; q < height; q++) {
-      for (let r = 0; r < width; r++) {
-        newBoard.set({ q: q, r: r }, 0);
-      }
-    }
     // Player 1 gets the first space, player 2 gets the last space
     newBoard.set({ q: 0, r: 0 }, 1);
     newBoard.set({ q: height - 1, r: width - 1 }, 2);
@@ -68,24 +63,24 @@ export const createBoardSlice = (set, get) => ({
     });
   },
 
-  // movePiece: (fromKey, toKey, player) => {
-  //   const { board, getValidMoves } = get();
-  //   const validMoves = getValidMoves(fromKey);
+  movePiece: (fromKey, toKey, player) => {
+    const { board, getValidMoves } = get();
+    const validMoves = getValidMoves(fromKey);
 
-  //   if (validMoves.includes(toKey)) {
-  //     const newBoard = new Map(board);
-  //     newBoard.set(toKey, player);
+    if (validMoves.includes(toKey)) {
+      const newBoard = new Map(board);
+      newBoard.set(toKey, player);
 
-  //     // If it's a jump move, remove the piece from the original position
-  //     if (calculateDistance(fromKey, toKey) > 1) {
-  //       newBoard.delete(fromKey);
-  //     }
+      // If it's a jump move, remove the piece from the original position
+      if (calculateDistance(fromKey, toKey) > 1) {
+        newBoard.delete(fromKey);
+      }
 
-  //     set({ board: newBoard });
-  //     return true;
-  //   }
-  //   return false;
-  // },
+      set({ board: newBoard });
+      return true;
+    }
+    return false;
+  },
 
   // /**
   //  * Gets valid moves for a given hex
@@ -331,12 +326,12 @@ export const createBoardSlice = (set, get) => ({
 //   );
 // }
 
-// // Helper function to calculate distance between two hexes
-// const calculateDistance = (fromKey, toKey) => {
-//   const [fromRow, fromCol] = fromKey.split("-").map(Number);
-//   const [toRow, toCol] = toKey.split("-").map(Number);
-//   return Math.max(Math.abs(fromRow - toRow), Math.abs(fromCol - toCol));
-// };
+// Helper function to calculate distance between two hexes
+const calculateDistance = (fromKey, toKey) => {
+  const fromHex = new Hex(fromKey.q, fromKey.r, -fromKey.q - fromKey.r);
+  const toHex = new Hex(toKey.q, toKey.r, -toKey.q - toKey.r);
+  return fromHex.distance(toHex);
+};
 
 /**
  * Usage example:
