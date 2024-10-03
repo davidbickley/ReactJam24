@@ -102,16 +102,17 @@ export const createBoardSlice = (set, get) => ({
    * @param {number} player - The current player (1 or 2)
    */
   convertAdjacentPieces: (hexKey, player) => {
-    const { board, getValidMoves } = get();
+    const { board, boardSize } = get();
     const newBoard = new Map(board);
 
-    for (otherKey in getValidMoves(hexKey)) {
-
+    for (let otherKey in getNeighbors(hexKey, boardSize)) {
+      if (board.has(otherKey)) {
+        newBoard.set({q: otherKey.q, r: otherKey.r}, player);
+      }
     }
-    }
 
-  //   set({ board: newBoard });
-  // },
+    set({ board: newBoard });
+  },
 
   // isHexHighlighted: (hexKey) => {
   //   const { highlightedHexes } = get();
@@ -292,7 +293,7 @@ export const createBoardSlice = (set, get) => ({
  */
 function isValidHex(hexKey, boardSize) {
   return (
-    0 <= hexKey.q && hexKey.q < boardSize.height && 0 <= hexKey.r && hexKey.r < boardSize.width 
+    0 <= hexKey.q && hexKey.q < boardSize.height && 0 <= hexKey.r && hexKey.r < boardSize.width
   );
 }
 
@@ -315,16 +316,16 @@ const getNeighbors = (hexKey, boardSize) => {
 
   // Make a hex object from the hex key
   const testHex = new Hex(hexKey.q, hexKey.r, -hexKey.q - hexKey.r);
-  
+
   // Use the hex object's neighbor method to get neighbors,
   // and validate that they are real hexes
-  for (let i = 0; i < 6; i++){
+  for (let i = 0; i < 6; i++) {
     const neighbor = new Hex(testHex.neighbor(Hex.directions[i]));
-    if (isValidHex({q: neighbor.q, r: neighbor.r }, boardSize)) {
-      neighbors.push({q: neighbor.q, r: neighbor.r});
+    if (isValidHex({ q: neighbor.q, r: neighbor.r }, boardSize)) {
+      neighbors.push({ q: neighbor.q, r: neighbor.r });
     }
   }
-  
+
   return neighbors;
 }
 
