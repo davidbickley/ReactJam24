@@ -1,8 +1,6 @@
 // src/store/slices/boardSlice.js
 
 import { Layout, Point } from "../../HexData/HexMath";
-import { MapStorage } from "../../HexData/MapStorage";
-
 
 /**
  * Board slice for the Ataxx game state management.
@@ -16,8 +14,9 @@ import { MapStorage } from "../../HexData/MapStorage";
  * @returns {Object} The board slice methods and properties
  */
 export const createBoardSlice = (set, get) => ({
-  mapLayout: new Layout(Layout.flat, 50, new Point(0,0)),
-  mapStorage: new MapStorage(),
+  mapLayout: new Layout(Layout.flat, 50, new Point(0, 0)),
+  mapStorage: new Map(),
+  board: new Map(),
   boardSize: {
     width: 0,
     height: 0
@@ -39,9 +38,23 @@ export const createBoardSlice = (set, get) => ({
       }
     }
 
+    // Initialize a map of coordinates to player ownership
+    const newBoard = new Map();
+
+    // Temporarily hard-coded board player setter
+    for (let q = 0; q < height; q++) {
+      for (let r = 0; r < width; r++) {
+        newBoard.set({ q: q, r: r }, 0);
+      }
+    }
+    // Player 1 gets the first space, player 2 gets the last space
+    newBoard.set({ q: 0, r: 0 }, 1);
+    newBoard.set({ q: height - 1, r: width - 1 }, 2);
+
     set({
       mapLayout: newLayout,
-      mapStorage: newStorage
+      mapStorage: newStorage,
+      board: newBoard
     });
   },
 
@@ -222,64 +235,64 @@ export const createBoardSlice = (set, get) => ({
   //   return validMoves;
   // },
 
-//   hasValidMoves: (player) => {
-//     const { board } = get();
-//     return Array.from(board.entries()).some(([key, piecePlayer]) => {
-//       if (piecePlayer === player) {
-//         const validMoves = get().getValidMoves(key);
-//         return validMoves.length > 0;
-//       }
-//       return false;
-//     });
-//   },
+  //   hasValidMoves: (player) => {
+  //     const { board } = get();
+  //     return Array.from(board.entries()).some(([key, piecePlayer]) => {
+  //       if (piecePlayer === player) {
+  //         const validMoves = get().getValidMoves(key);
+  //         return validMoves.length > 0;
+  //       }
+  //       return false;
+  //     });
+  //   },
 
-//   /**
-//    * Highlights hexagons within two spaces of the selected hexagon
-//    * @param {string|null} hexKey - The key of the selected hexagon, or null to clear highlights
-//    */
-//   highlightValidMoves: (hexKey) => {
-//     if (!hexKey) {
-//       set({ highlightedHexes: new Set() });
-//       return;
-//     }
+  //   /**
+  //    * Highlights hexagons within two spaces of the selected hexagon
+  //    * @param {string|null} hexKey - The key of the selected hexagon, or null to clear highlights
+  //    */
+  //   highlightValidMoves: (hexKey) => {
+  //     if (!hexKey) {
+  //       set({ highlightedHexes: new Set() });
+  //       return;
+  //     }
 
-//     const validMoves = get().getValidMoves(hexKey);
-//     set({ highlightedHexes: new Set(validMoves) });
-//   },
+  //     const validMoves = get().getValidMoves(hexKey);
+  //     set({ highlightedHexes: new Set(validMoves) });
+  //   },
 
-//   /**
-//    * Checks if a hexagon is highlighted
-//    * @param {string} hexKey - The key of the hexagon to check
-//    * @returns {boolean} Whether the hexagon is highlighted
-//    */
-//   isHexHighlighted: (hexKey) => {
-//     const { highlightedHexes } = get();
-//     return highlightedHexes.has(hexKey);
-//   },
+  //   /**
+  //    * Checks if a hexagon is highlighted
+  //    * @param {string} hexKey - The key of the hexagon to check
+  //    * @returns {boolean} Whether the hexagon is highlighted
+  //    */
+  //   isHexHighlighted: (hexKey) => {
+  //     const { highlightedHexes } = get();
+  //     return highlightedHexes.has(hexKey);
+  //   },
 
-//   /**
-//    * Checks if the board needs to be reinitialized due to size change
-//    * @param {Object} newSize - The new board size
-//    * @returns {boolean} Whether the board needs reinitialization
-//    */
-//   needsBoardReset: (newSize) => {
-//     const { boardSize } = get();
-//     return (
-//       newSize.width !== boardSize.width || newSize.height !== boardSize.height
-//     );
-//   },
+  //   /**
+  //    * Checks if the board needs to be reinitialized due to size change
+  //    * @param {Object} newSize - The new board size
+  //    * @returns {boolean} Whether the board needs reinitialization
+  //    */
+  //   needsBoardReset: (newSize) => {
+  //     const { boardSize } = get();
+  //     return (
+  //       newSize.width !== boardSize.width || newSize.height !== boardSize.height
+  //     );
+  //   },
 
-//   getScores: () => {
-//     const { board } = get();
-//     const scores = { player1: 0, player2: 0 };
+  //   getScores: () => {
+  //     const { board } = get();
+  //     const scores = { player1: 0, player2: 0 };
 
-//     for (const player of board.values()) {
-//       if (player === 1) scores.player1++;
-//       else if (player === 2) scores.player2++;
-//     }
+  //     for (const player of board.values()) {
+  //       if (player === 1) scores.player1++;
+  //       else if (player === 2) scores.player2++;
+  //     }
 
-//     return scores;
-//   },
+  //     return scores;
+  //   },
 
 });
 
