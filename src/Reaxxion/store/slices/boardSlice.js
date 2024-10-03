@@ -132,7 +132,7 @@ export const createBoardSlice = (set, get) => ({
   /**
    * Checks if the board needs to be reinitialized due to size change
    * @param {Object} newSize - The new board size
-   * @returns {boolean} Whether the board needs reinitialization
+   * @returns {boolean} - Whether the board needs reinitialization
    */
   needsBoardReset: (newSize) => {
     const { boardSize } = get();
@@ -141,17 +141,21 @@ export const createBoardSlice = (set, get) => ({
     );
   },
 
-  //   getScores: () => {
-  //     const { board } = get();
-  //     const scores = { player1: 0, player2: 0 };
+  /**
+   * Calculates the score of the game
+   * @returns {Object} - An object with { player1: score, player2: score }
+   */
+  getScores: () => {
+    const { board } = get();
+    const scores = { player1: 0, player2: 0 };
 
-  //     for (const player of board.values()) {
-  //       if (player === 1) scores.player1++;
-  //       else if (player === 2) scores.player2++;
-  //     }
+    for (const player of board.values()) {
+      if (player === 1) scores.player1++;
+      else if (player === 2) scores.player2++;
+    }
 
-  //     return scores;
-  //   },
+    return scores;
+  },
 
 });
 
