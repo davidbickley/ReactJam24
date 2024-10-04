@@ -24,6 +24,12 @@ export const createBoardSlice = (set, get) => ({
   },
   highlightedHexes: new Set(),
 
+  /**
+   * Creates the game board for a new game
+   * @param {number} width - the amount of desired columns
+   * @param {number} height - the amount of desired rows
+   * @param {number} hexSize - the size of each hexagon
+   */
   initializeBoard: (width, height, hexSize) => {
     // Initialize a layout to be given to the mapLayout state value
     // TODO: Some of its parameters are hard coded right now but we can/should change that
