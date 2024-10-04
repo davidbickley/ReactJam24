@@ -83,6 +83,17 @@ export const createPlayerSlice = (set, get) => ({
     }
   },
 
+  hasValidMoves: (player) => {
+    const { board } = get();
+    return Array.from(board.entries()).some(([key, piecePlayer]) => {
+      if (piecePlayer === player) {
+        const validMoves = get().getValidMoves(key);
+        return validMoves.length > 0;
+      }
+      return false;
+    });
+  },
+
   /**
    * Gets the valid moves for the current player
    * @returns {Object.<string, string[]>} An object mapping piece positions to their valid moves
