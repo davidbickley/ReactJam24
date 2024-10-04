@@ -12,19 +12,23 @@ const useGameStore = create((set, get) => ({
   ...createGameStatusSlice(set, get),
   ...createViewportSlice(set, get),
 
-  initializeGame: () => {
+  initializeGame: (width, height, viewportWidth, viewportHeight) => {
     const {
-      getBoardSize,
       initializeBoard,
       setCurrentPlayer,
       resetGameStatus,
       clearHighlights,
     } = get();
-    const { width, height } = getBoardSize();
-    initializeBoard(width, height);
+    initializeBoard(width, height, viewportWidth, viewportHeight);
     setCurrentPlayer(1);
     resetGameStatus();
     clearHighlights();
+
+    console.log("Game initialized:", {
+      board: get().board,
+      boardSize: get().boardSize,
+      currentPlayer: get().currentPlayer,
+    });
   },
 
   handleHexSelection: (hexKey) => {
