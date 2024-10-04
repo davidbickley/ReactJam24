@@ -20,7 +20,7 @@ export const createBoardSlice = (set, get) => ({
   board: new Map(),
   boardSize: {
     width: 0,
-    height: 0
+    height: 0,
   },
   highlightedHexes: new Set(),
 
@@ -33,7 +33,12 @@ export const createBoardSlice = (set, get) => ({
   initializeBoard: (width, height, hexSize) => {
     // Initialize a layout to be given to the mapLayout state value
     // TODO: Some of its parameters are hard coded right now but we can/should change that
-    const newLayout = new Layout(Layout.flat, hexSize, new Point(0, 0));
+    const size = typeof hexSize === "number" ? hexSize : 30; // Default size of 30 if not provided
+    const newLayout = new Layout(
+      Layout.flat,
+      new Point(size, size), // Use the size here
+      new Point((width * size) / 2, (height * size) / 2) // Center the grid
+    );
 
     // Initialize a map to be given to the mapStorage state value
     const newStorage = new Map();
@@ -56,7 +61,8 @@ export const createBoardSlice = (set, get) => ({
     set({
       mapLayout: newLayout,
       mapStorage: newStorage,
-      board: newBoard
+      board: newBoard,
+      boardSize: { width, height },
     });
   },
 
@@ -66,7 +72,7 @@ export const createBoardSlice = (set, get) => ({
     newLayout.size = size;
 
     set({
-      mapLayout: newLayout
+      mapLayout: newLayout,
     });
   },
 
@@ -94,7 +100,11 @@ export const createBoardSlice = (set, get) => ({
 
     // Check all hexes within a two-tile radius
     const validMoves = mapStorage.keys().filter((otherKey) => {
-      if (isValidHex(otherKey) && !board.has(otherKey) && hexKey.distance(otherKey <= 2)) {
+      if (
+        isValidHex(otherKey) &&
+        !board.has(otherKey) &&
+        hexKey.distance(otherKey <= 2)
+      ) {
         return true;
       }
     });
@@ -162,7 +172,6 @@ export const createBoardSlice = (set, get) => ({
 
     return scores;
   },
-
 });
 
 /**
@@ -173,7 +182,10 @@ export const createBoardSlice = (set, get) => ({
  */
 function isValidHex(hexKey, boardSize) {
   return (
-    0 <= hexKey.q && hexKey.q < boardSize.height && 0 <= hexKey.r && hexKey.r < boardSize.width
+    0 <= hexKey.q &&
+    hexKey.q < boardSize.height &&
+    0 <= hexKey.r &&
+    hexKey.r < boardSize.width
   );
 }
 
@@ -211,7 +223,7 @@ const getNeighbors = (hexKey, boardSize) => {
   }
 
   return neighbors;
-}
+};
 
 /**
  * Usage example:
