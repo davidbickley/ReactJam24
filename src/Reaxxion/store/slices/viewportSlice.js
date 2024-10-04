@@ -29,7 +29,7 @@ export const createViewportSlice = (set, get) => ({
   getBoardSize: () => {
     const { viewport } = get();
     const aspectRatio = viewport.width / viewport.height;
-    const baseSize = 6;
+    const baseSize = 12; // Increased from 8 to 12 for more rows/columns
     let width, height;
 
     if (aspectRatio > 1) {
@@ -49,8 +49,6 @@ export const createViewportSlice = (set, get) => ({
     // Cap the maximum size
     width = Math.min(width, 24);
     height = Math.min(height, 24);
-
-    console.log("getBoardSize:", { width, height }); // Added this log
 
     return { width, height };
   },

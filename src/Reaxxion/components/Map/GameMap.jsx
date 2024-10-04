@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+// src/components/Map/GameMap.jsx
+
+import React, { useEffect, useCallback } from "react";
 import HexGrid from "./HexGrid";
 import useGameStore from "../../store/useGameStore";
 
@@ -16,44 +18,34 @@ const GameMap = () => {
     viewport,
     initViewportListeners,
     getBoardSize,
+    needsBoardReset,
   } = useGameStore();
 
-  const [isInitialized, setIsInitialized] = useState(false);
-
   useEffect(() => {
+    initializeGame();
     const cleanupViewportListeners = initViewportListeners();
     return () => {
       cleanupViewportListeners();
     };
-  }, [initViewportListeners]);
+  }, [initializeGame, initViewportListeners]);
 
   useEffect(() => {
-    const { width, height } = getBoardSize();
-    console.log("Initializing game with size:", width, "x", height);
-    initializeGame(width, height, viewport.width, viewport.height);
-    setIsInitialized(true);
-  }, [getBoardSize, initializeGame, viewport.width, viewport.height]);
+    const newBoardSize = getBoardSize();
+    if (needsBoardReset(newBoardSize)) {
+      initializeGame();
+    }
+  }, [viewport, getBoardSize, needsBoardReset, initializeGame]);
 
-  console.log("GameMap render:", {
-    boardSize,
-    viewport,
-    board: {
-      isMap: board instanceof Map,
-      size: board instanceof Map ? board.size : "N/A",
-      firstFewEntries:
-        board instanceof Map ? Array.from(board.entries()).slice(0, 5) : "N/A",
+  const handleHexClick = useCallback(
+    (hexKey) => {
+      if (gameStatus === "playing") {
+        handleHexSelection(hexKey);
+      }
     },
-    isInitialized,
-  });
+    [gameStatus, handleHexSelection]
+  );
 
-  const handleHexClick = (hexKey) => {
-    console.log("Hex clicked:", hexKey);
-    handleHexSelection(hexKey);
-  };
-
-  if (!isInitialized) {
-    return <div>Initializing game...</div>;
-  }
+  const scores = getScores();
 
   return (
     <div
@@ -64,20 +56,32 @@ const GameMap = () => {
         flexDirection: "column",
       }}
     >
-      <div>
+      <div
+        style={{
+          padding: "5px",
+          height: "40px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <span>Current Player: {getPlayerColor(currentPlayer)}</span>
         <span>
-          Red: {getScores().player1} | Blue: {getScores().player2}
+          Red: {scores.player1} | Blue: {scores.player2}
         </span>
         <span>
           Board: {boardSize.width}x{boardSize.height}
         </span>
       </div>
-      <div>
-        {gameStatus === "finished"
-          ? getGameResultMessage()
-          : "Game in progress"}
-      </div>
+      {gameStatus === "finished" ? (
+        <div style={{ height: "20px", textAlign: "center" }}>
+          {getGameResultMessage()}
+        </div>
+      ) : (
+        <div style={{ height: "20px", textAlign: "center" }}>
+          Game in progress
+        </div>
+      )}
       <div style={{ flex: 1, overflow: "hidden" }}>
         <HexGrid
           width={viewport.width}
@@ -91,4 +95,4 @@ const GameMap = () => {
   );
 };
 
-export default GameMap;
+export default React.memo(GameMap);
