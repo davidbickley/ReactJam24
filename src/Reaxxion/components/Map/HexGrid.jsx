@@ -1,32 +1,31 @@
-// src/components/Map/HexGrid.jsx
+// HexGrid.jsx
 
 import React, { useMemo } from "react";
 import Hexagon from "./Hexagon";
 import useGameStore from "../../store/useGameStore";
-import { Hex, Point } from "../../HexData/HexMath";
+import { Point } from "../../HexData/HexMath";
 
 const HexGrid = React.memo(({ onHexClick }) => {
   const { mapStorage, mapLayout, board, boardSize } = useGameStore();
 
-  console.log("mapStorage:", mapStorage);
-  console.log("mapLayout:", mapLayout);
-  console.log("board:", board);
+  console.log("mapStorage size:", mapStorage.size);
+  console.log("board size:", board.size);
   console.log("boardSize:", boardSize);
 
+  console.log("Board entries:");
+  board.forEach((value, key) => {
+    console.log(`Key: ${key}, Value: ${value}`);
+  });
+
   const hexagons = useMemo(() => {
-    if (
-      !mapStorage ||
-      !mapLayout ||
-      !mapLayout.size ||
-      !mapLayout.size.x ||
-      !mapLayout.size.y
-    ) {
-      console.error("mapStorage or mapLayout is undefined or incomplete");
+    if (!mapStorage || !mapLayout || !mapLayout.size || !board) {
+      console.error(
+        "mapStorage, mapLayout, or board is undefined or incomplete"
+      );
       return [];
     }
 
-    return Array.from(mapStorage.keys()).map((key) => {
-      const hex = new Hex(key.q, key.r, -key.q - key.r);
+    return Array.from(mapStorage.entries()).map(([key, hex]) => {
       let point, corners;
       try {
         point = mapLayout.hexToPixel(hex);
@@ -36,16 +35,20 @@ const HexGrid = React.memo(({ onHexClick }) => {
         point = new Point(0, 0);
         corners = [];
       }
-      const owner = board.get(key) || 0;
+      const owner = board.get(key);
+      console.log(`Hex ${key} - Owner: ${owner}`);
 
       return {
-        key: `${key.q}-${key.r}`,
-        q: key.q,
-        r: key.r,
-        x: point.x,
-        y: point.y,
-        corners: corners,
-        owner: owner,
+        key,
+        q: hex.q,
+        r: hex.r,
+        x: point ? point.x : 0,
+        y: point ? point.y : 0,
+        corners: corners.map((corner) => ({
+          x: corner ? corner.x : 0,
+          y: corner ? corner.y : 0,
+        })),
+        owner,
       };
     });
   }, [mapStorage, mapLayout, board]);
@@ -57,6 +60,7 @@ const HexGrid = React.memo(({ onHexClick }) => {
       </div>
     );
   }
+
   // Calculate the SVG viewBox
   const minX = Math.min(...hexagons.map((h) => h.x));
   const minY = Math.min(...hexagons.map((h) => h.y));
@@ -72,7 +76,12 @@ const HexGrid = React.memo(({ onHexClick }) => {
         {hexagons.map((hexProps) => (
           <Hexagon
             key={hexProps.key}
-            {...hexProps}
+            q={hexProps.q}
+            r={hexProps.r}
+            x={hexProps.x}
+            y={hexProps.y}
+            corners={hexProps.corners}
+            owner={hexProps.owner}
             onClick={() => onHexClick({ q: hexProps.q, r: hexProps.r })}
           />
         ))}

@@ -36,27 +36,32 @@ export const createBoardSlice = (set, get) => ({
     const size = typeof hexSize === "number" ? hexSize : 30; // Default size of 30 if not provided
     const newLayout = new Layout(
       Layout.flat,
-      new Point(size, size), // Use the size here
+      new Point(size, size),
       new Point((width * size) / 2, (height * size) / 2) // Center the grid
     );
 
     // Initialize a map to be given to the mapStorage state value
     const newStorage = new Map();
 
-    // Temporary hard-coded map formation algorithm
-    for (let q = 0; q < height; q++) {
-      for (let r = 0; r < width; r++) {
-        newStorage.set({ q: q, r: r }, -q - r);
-      }
-    }
-
     // Initialize a map of coordinates to player ownership
     const newBoard = new Map();
 
+    // Temporary hard-coded map formation algorithm
+    for (let q = 0; q < height; q++) {
+      for (let r = 0; r < width; r++) {
+        const key = `${q},${r}`;
+        newStorage.set(key, new Hex(q, r, -q - r));
+        // Initialize all hexes as unowned (0)
+        newBoard.set(key, 0);
+      }
+    }
+
     // Temporarily hard-coded board player setter
     // Player 1 gets the first space, player 2 gets the last space
-    newBoard.set({ q: 0, r: 0 }, 1);
-    newBoard.set({ q: height - 1, r: width - 1 }, 2);
+    newBoard.set("0,0", 1);
+    newBoard.set(`${height - 1},${width - 1}`, 2);
+
+    console.log("Initialized board:", newBoard);
 
     set({
       mapLayout: newLayout,
@@ -82,12 +87,14 @@ export const createBoardSlice = (set, get) => ({
 
     if (validMoves.includes(toKey)) {
       const newBoard = new Map(board);
-      newBoard.set(toKey, player);
+      newBoard.set(`${toKey.q},${toKey.r}`, player);
 
       // If it's a jump move, remove the piece from the original position
       if (calculateDistance(fromKey, toKey) > 1) {
-        newBoard.delete(fromKey);
+        newBoard.delete(`${fromKey.q},${fromKey.r}`);
       }
+
+      console.log("Updated board after move:", newBoard);
 
       set({ board: newBoard });
       return true;
@@ -121,9 +128,10 @@ export const createBoardSlice = (set, get) => ({
     const { board, boardSize } = get();
     const newBoard = new Map(board);
 
-    for (let otherKey in getNeighbors(hexKey, boardSize)) {
-      if (board.has(otherKey)) {
-        newBoard.set({ q: otherKey.q, r: otherKey.r }, player);
+    for (let otherKey of getNeighbors(hexKey, boardSize)) {
+      const keyString = `${otherKey.q},${otherKey.r}`;
+      if (board.has(keyString)) {
+        newBoard.set(keyString, player);
       }
     }
 
@@ -174,51 +182,29 @@ export const createBoardSlice = (set, get) => ({
   },
 });
 
-/**
- * Checks if a hex is within the board boundaries
- * @param {Object} hexKey - The row and column of the hex
- * @param {Object} boardSize - The size of the board
- * @returns {boolean} Whether the hex is valid
- */
 function isValidHex(hexKey, boardSize) {
-  return (
-    0 <= hexKey.q &&
-    hexKey.q < boardSize.height &&
-    0 <= hexKey.r &&
-    hexKey.r < boardSize.width
-  );
+  const [q, r] = hexKey.split(",").map(Number);
+  return 0 <= q && q < boardSize.height && 0 <= r && r < boardSize.width;
 }
 
-/** Helper function to calculate distance between two hexes
- * @param {Object} fromKey - The row and column of the 'from' hex
- * @param {Object} toKey - The row and column of the 'to' hex
- * @returns {number} - The distance in hexes from the 'from' hex to the 'to' hex
- */
 const calculateDistance = (fromKey, toKey) => {
-  const fromHex = new Hex(fromKey.q, fromKey.r, -fromKey.q - fromKey.r);
-  const toHex = new Hex(toKey.q, toKey.r, -toKey.q - toKey.r);
+  const [fromQ, fromR] = fromKey.split(",").map(Number);
+  const [toQ, toR] = toKey.split(",").map(Number);
+  const fromHex = new Hex(fromQ, fromR, -fromQ - fromR);
+  const toHex = new Hex(toQ, toR, -toQ - toR);
   return fromHex.distance(toHex);
 };
 
-/**
- * Returns the valid hexes that neighbor the given hex
- * @param {number} hexKey - The row and column of the hex
- * @param {Object} boardSize - The size of the board
- * @returns {Object[]} - Array of hexKeys that are neighbors
- */
 const getNeighbors = (hexKey, boardSize) => {
-  // Initialize the array of neighbors
+  const [q, r] = hexKey.split(",").map(Number);
+  const testHex = new Hex(q, r, -q - r);
   const neighbors = [];
 
-  // Make a hex object from the hex key
-  const testHex = new Hex(hexKey.q, hexKey.r, -hexKey.q - hexKey.r);
-
-  // Use the hex object's neighbor method to get neighbors,
-  // and validate that they are real hexes
   for (let i = 0; i < 6; i++) {
-    const neighbor = new Hex(testHex.neighbor(Hex.directions[i]));
-    if (isValidHex({ q: neighbor.q, r: neighbor.r }, boardSize)) {
-      neighbors.push({ q: neighbor.q, r: neighbor.r });
+    const neighbor = testHex.neighbor(Hex.directions[i]);
+    const neighborKey = `${neighbor.q},${neighbor.r}`;
+    if (isValidHex(neighborKey, boardSize)) {
+      neighbors.push(neighborKey);
     }
   }
 
