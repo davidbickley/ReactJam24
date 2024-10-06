@@ -14,7 +14,7 @@ const HexGrid = React.memo(({ onHexClick }) => {
 
   console.log("Board entries:");
   board.forEach((value, key) => {
-    console.log(`Key: ${key}, Value: ${board.get(key)}`);
+    // console.log(`Key: ${key}, Value: ${board.get(key)}`);
   });
 
   const hexagons = useMemo(() => {

@@ -103,19 +103,27 @@ export const createBoardSlice = (set, get) => ({
   },
 
   getValidMoves: (hexKey) => {
-    const { board, mapStorage } = get();
+    const { board, mapStorage, boardSize } = get();
 
-    // Check all hexes within a two-tile radius
-    const validMoves = mapStorage.keys().filter((otherKey) => {
-      if (
-        isValidHex(otherKey) &&
-        !board.has(otherKey) &&
-        hexKey.distance(otherKey <= 2)
-      ) {
+    // Get all the keys
+    const allKeys = [...mapStorage.keys()];
+    // Set up a function to filter allKeys to only hexes within a two-tile radius
+    const keyValidator = allKeys.filter((key) => {
+      console.log("Board.has(key) = " + board.has(key));
+      if (isValidHex(key, boardSize)
+        && !board.has(key)
+        && calculateDistance(hexKey, key) <= 2) {
         return true;
       }
+      else { return false };
     });
 
+    const validMoves = [];
+    for (const otherKey of keyValidator)
+    {
+      validMoves.push(otherKey);
+    }
+    
     return validMoves;
   },
 
@@ -192,6 +200,7 @@ const calculateDistance = (fromKey, toKey) => {
   const [toQ, toR] = toKey.split(",").map(Number);
   const fromHex = new Hex(fromQ, fromR, -fromQ - fromR);
   const toHex = new Hex(toQ, toR, -toQ - toR);
+  console.log("Distance: " + fromHex.distance(toHex));
   return fromHex.distance(toHex);
 };
 
