@@ -19,6 +19,7 @@ const GameMap = () => {
     initViewportListeners,
     getBoardSize,
     needsBoardReset,
+    selectedHex
   } = useGameStore();
 
   useEffect(() => {
@@ -71,6 +72,9 @@ const GameMap = () => {
         </span>
         <span>
           Board: {boardSize.width}x{boardSize.height}
+        </span>
+        <span>
+          Selected hex: {selectedHex}
         </span>
       </div>
       {gameStatus === "finished" ? (
