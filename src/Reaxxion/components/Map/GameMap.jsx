@@ -41,7 +41,7 @@ const GameMap = () => {
     (hexKey) => {
       if (gameStatus === "playing") {
         console.log(`Handling hex selection! hexKey: ${hexKey.q},${hexKey.r}`)
-        handleHexSelection(hexKey);
+        handleHexSelection(`${hexKey.q},${hexKey.r}`);
       }
     },
     [gameStatus, handleHexSelection]
