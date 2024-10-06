@@ -26,7 +26,7 @@ const Hexagon = React.memo(({ q, r, x, y, corners, owner, onClick }) => {
   // const isSelected = selectedHex === hexKey; HexKey no longer exists
 
   return (
-    <g transform={`translate(${isNaN(x) ? 0 : x},${isNaN(y) ? 0 : y})`}>
+    //<g transform={`translate(${isNaN(x) ? 0 : x},${isNaN(y) ? 0 : y})`}>
       <polygon
         points={pointsString}
         fill={fillColor}
@@ -34,7 +34,7 @@ const Hexagon = React.memo(({ q, r, x, y, corners, owner, onClick }) => {
         strokeWidth={strokeWidth}
         onClick={() => onClick({ q, r })}
       />
-    </g>
+    //</g>
   );
 });
 
