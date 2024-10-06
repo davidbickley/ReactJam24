@@ -42,6 +42,7 @@ const useGameStore = create((set, get) => ({
       gameStatus,
     } = get();
 
+    console.log(`Hex belongs to player ${currentPlayer}`);
     if (gameStatus !== "playing") return;
 
     if (!selectedHex) {

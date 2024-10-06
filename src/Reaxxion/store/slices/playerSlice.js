@@ -49,40 +49,6 @@ export const createPlayerSlice = (set, get) => ({
    */
   setSelectedHex: (hexKey) => set({ selectedHex: hexKey }),
 
-  /**
-   * Handles the hex selection process
-   * @param {string} hexKey - The key of the clicked hex
-   */
-  handleHexSelection: (hexKey) => {
-    const {
-      currentPlayer,
-      selectedHex,
-      board,
-      getValidMoves,
-      movePiece,
-      convertAdjacentPieces,
-      switchPlayer,
-    } = get();
-    const clickedHexPlayer = board.get(hexKey);
-
-    if (!selectedHex) {
-      // First click - select piece
-      if (clickedHexPlayer === currentPlayer) {
-        set({ selectedHex: hexKey });
-      }
-    } else {
-      // Second click - attempt move
-      const validMoves = getValidMoves(selectedHex);
-      if (validMoves.includes(hexKey)) {
-        if (movePiece(selectedHex, hexKey, currentPlayer)) {
-          convertAdjacentPieces(hexKey, currentPlayer);
-          switchPlayer();
-        }
-      }
-      set({ selectedHex: null });
-    }
-  },
-
   hasValidMoves: (player) => {
     const { board } = get();
     return Array.from(board.entries()).some(([key, piecePlayer]) => {
