@@ -1,12 +1,20 @@
 // src/store/slices/boardSlice.js
 
-import { getValue } from "@testing-library/user-event/dist/utils";
 import { Hex, Layout, Point } from "../../HexData/HexMath";
 
 /**
- * Board slice for the Ataxx game state management.
- * Handles the game board data, move validation, and piece conversion.
+ * Calculates the distance between two hexes
+ * @param {string} fromKey - The key of the starting hex (format: "q,r")
+ * @param {string} toKey - The key of the ending hex (format: "q,r")
+ * @returns {number} The distance between the two hexes
  */
+export const calculateDistance = (fromKey, toKey) => {
+  const [fromQ, fromR] = fromKey.split(",").map(Number);
+  const [toQ, toR] = toKey.split(",").map(Number);
+  const fromHex = new Hex(fromQ, fromR, -fromQ - fromR);
+  const toHex = new Hex(toQ, toR, -toQ - toR);
+  return fromHex.distance(toHex);
+};
 
 /**
  * Creates the board slice for the Zustand store
@@ -15,29 +23,24 @@ import { Hex, Layout, Point } from "../../HexData/HexMath";
  * @returns {Object} The board slice methods and properties
  */
 export const createBoardSlice = (set, get) => ({
-  mapLayout: new Layout(Layout.flat, 50, new Point(0, 0)),
+  // Board state
+  mapLayout: new Layout(Layout.flat, new Point(50, 50), new Point(0, 0)),
   mapStorage: new Map(),
   board: new Map(),
-  boardSize: {
-    width: 0,
-    height: 0,
-  },
+  boardSize: { width: 0, height: 0 },
   highlightedHexes: new Set(),
 
   /**
-   * Creates the game board for a new game
-   * @param {number} width - the amount of desired columns
-   * @param {number} height - the amount of desired rows
-   * @param {number} hexSize - the size of each hexagon
+   * Initializes the game board
+   * @param {number} width - Number of columns
+   * @param {number} height - Number of rows
+   * @param {number} [hexSize=30] - Size of each hexagon
    */
-  initializeBoard: (width, height, hexSize) => {
-    // Initialize a layout to be given to the mapLayout state value
-    // TODO: Some of its parameters are hard coded right now but we can/should change that
-    const size = typeof hexSize === "number" ? hexSize : 30; // Default size of 30 if not provided
+  initializeBoard: (width, height, hexSize = 30) => {
     const newLayout = new Layout(
       Layout.flat,
-      new Point(size, size),
-      new Point((width * size) / 2, (height * size) / 2) // Center the grid
+      new Point(hexSize, hexSize),
+      new Point((width * hexSize) / 2, (height * hexSize) / 2)
     );
 
     // Initialize a map to be given to the mapStorage state value
@@ -71,30 +74,37 @@ export const createBoardSlice = (set, get) => ({
     });
   },
 
+  /**
+   * Resizes the board
+   * @param {Point} size - New size for the hexagons
+   */
   resizeBoard: (size) => {
     const { mapLayout } = get();
-    const newLayout = new Layout(mapLayout);
-    newLayout.size = size;
-
-    set({
-      mapLayout: newLayout,
-    });
+    const newLayout = new Layout(mapLayout.orientation, size, mapLayout.origin);
+    set({ mapLayout: newLayout });
   },
 
+  /**
+   * Moves a piece on the board according to Ataxx rules
+   * @param {string} fromKey - Starting position
+   * @param {string} toKey - Ending position
+   * @param {number} player - Current player
+   * @returns {boolean} Whether the move was successful
+   */
   movePiece: (fromKey, toKey, player) => {
     const { board, getValidMoves } = get();
     const validMoves = getValidMoves(fromKey);
 
     if (validMoves.includes(toKey)) {
       const newBoard = new Map(board);
-      newBoard.set(`${toKey.q},${toKey.r}`, player);
+      newBoard.set(toKey, player);
 
-      // If it's a jump move, remove the piece from the original position
-      if (calculateDistance(fromKey, toKey) > 1) {
-        newBoard.delete(`${fromKey.q},${fromKey.r}`);
+      const distance = calculateDistance(fromKey, toKey);
+      if (distance === 2) {
+        // For jump moves, remove the piece from the original position
+        newBoard.delete(fromKey);
       }
-
-      console.log("Updated board after move:", newBoard);
+      // For adjacent moves (distance === 1), keep the original piece
 
       set({ board: newBoard });
       return true;
@@ -102,61 +112,69 @@ export const createBoardSlice = (set, get) => ({
     return false;
   },
 
+  /**
+   * Gets valid moves for a given position according to Ataxx rules
+   * @param {string} hexKey - The position to check
+   * @returns {string[]} Array of valid move positions
+   */
   getValidMoves: (hexKey) => {
     const { board, mapStorage, boardSize } = get();
+    const [q, r] = hexKey.split(",").map(Number);
+    const originHex = new Hex(q, r, -q - r);
 
-    // Get all the keys
-    const allKeys = [...mapStorage.keys()];
-    // Set up a function to filter allKeys to only hexes within a two-tile radius
-    const keyValidator = allKeys.filter((key) => {
-      console.log("Board.has(key) = " + board.has(key));
-      if (isValidHex(key, boardSize)
-        && !board.has(key)
-        && calculateDistance(hexKey, key) <= 2) {
-        return true;
-      }
-      else { return false };
+    return [...mapStorage.keys()].filter((key) => {
+      if (key === hexKey) return false; // Can't move to the same position
+      const [targetQ, targetR] = key.split(",").map(Number);
+      const targetHex = new Hex(targetQ, targetR, -targetQ - targetR);
+      const distance = originHex.distance(targetHex);
+      return (
+        isValidHex(key, boardSize) && board.get(key) === 0 && distance <= 2
+      );
     });
-
-    const validMoves = [];
-    for (const otherKey of keyValidator)
-    {
-      validMoves.push(otherKey);
-    }
-    
-    return validMoves;
   },
 
   /**
-   * Converts adjacent pieces to the current player's color
-   * @param {string} hexKey - The key of the hex that was just placed
-   * @param {number} player - The current player (1 or 2)
+   * Converts adjacent opponent pieces to the current player's color
+   * @param {string} hexKey - The position of the newly placed piece
+   * @param {number} player - The current player
    */
   convertAdjacentPieces: (hexKey, player) => {
     const { board, boardSize } = get();
     const newBoard = new Map(board);
+    const opponentPlayer = player === 1 ? 2 : 1;
 
-    for (let otherKey of getNeighbors(hexKey, boardSize)) {
-      const keyString = `${otherKey.q},${otherKey.r}`;
-      if (board.has(keyString)) {
-        newBoard.set(keyString, player);
+    for (const neighborKey of getNeighbors(hexKey, boardSize)) {
+      if (board.get(neighborKey) === opponentPlayer) {
+        newBoard.set(neighborKey, player);
       }
     }
 
     set({ board: newBoard });
   },
 
+  /**
+   * Checks if a hex is highlighted
+   * @param {string} hexKey - The position to check
+   * @returns {boolean} Whether the hex is highlighted
+   */
   isHexHighlighted: (hexKey) => {
     const { highlightedHexes } = get();
     return highlightedHexes.has(hexKey);
   },
 
+  /**
+   * Highlights valid moves for a given position
+   * @param {string} hexKey - The position to highlight moves for
+   */
   highlightValidMoves: (hexKey) => {
-    const { getValidMoves } = get();
-    const validMoves = getValidMoves(hexKey);
+    const validMoves = get().getValidMoves(hexKey);
     set({ highlightedHexes: new Set(validMoves) });
+    console.log(`Highlighted hexes: ${[...validMoves].join(", ")}`);
   },
 
+  /**
+   * Clears all highlighted hexes
+   */
   clearHighlights: () => {
     set({ highlightedHexes: new Set() });
   },
@@ -190,34 +208,46 @@ export const createBoardSlice = (set, get) => ({
   },
 });
 
-function isValidHex(hexKey, boardSize) {
-  const [q, r] = hexKey.split(",").map(Number);
-  return 0 <= q && q < boardSize.height && 0 <= r && r < boardSize.width;
-}
-
-const calculateDistance = (fromKey, toKey) => {
-  const [fromQ, fromR] = fromKey.split(",").map(Number);
-  const [toQ, toR] = toKey.split(",").map(Number);
-  const fromHex = new Hex(fromQ, fromR, -fromQ - fromR);
-  const toHex = new Hex(toQ, toR, -toQ - toR);
-  console.log("Distance: " + fromHex.distance(toHex));
-  return fromHex.distance(toHex);
+/**
+ * Checks if a move is valid
+ * @param {string} fromKey - Starting position
+ * @param {string} toKey - Ending position
+ * @param {Map} board - Current game board
+ * @param {Object} boardSize - Board dimensions
+ * @returns {boolean} Whether the move is valid
+ */
+const isValidMove = (fromKey, toKey, board, boardSize) => {
+  return (
+    isValidHex(toKey, boardSize) &&
+    !board.has(toKey) &&
+    calculateDistance(fromKey, toKey) <= 2
+  );
 };
 
+/**
+ * Checks if a hex is within the board boundaries
+ * @param {string} hexKey - The position to check
+ * @param {Object} boardSize - Board dimensions
+ * @returns {boolean} Whether the hex is valid
+ */
+const isValidHex = (hexKey, boardSize) => {
+  const [q, r] = hexKey.split(",").map(Number);
+  return 0 <= q && q < boardSize.height && 0 <= r && r < boardSize.width;
+};
+
+/**
+ * Gets the neighboring hexes for a given position
+ * @param {string} hexKey - The position to get neighbors for
+ * @param {Object} boardSize - Board dimensions
+ * @returns {string[]} Array of neighboring positions
+ */
 const getNeighbors = (hexKey, boardSize) => {
   const [q, r] = hexKey.split(",").map(Number);
   const testHex = new Hex(q, r, -q - r);
-  const neighbors = [];
-
-  for (let i = 0; i < 6; i++) {
-    const neighbor = testHex.neighbor(Hex.directions[i]);
-    const neighborKey = `${neighbor.q},${neighbor.r}`;
-    if (isValidHex(neighborKey, boardSize)) {
-      neighbors.push(neighborKey);
-    }
-  }
-
-  return neighbors;
+  return Hex.directions
+    .map((dir) => testHex.add(dir))
+    .filter((neighbor) => isValidHex(`${neighbor.q},${neighbor.r}`, boardSize))
+    .map((neighbor) => `${neighbor.q},${neighbor.r}`);
 };
 
 /**
@@ -228,11 +258,9 @@ const getNeighbors = (hexKey, boardSize) => {
  *   // ... other slices
  * }));
  *
- * const { initializeBoard, movePiece, convertAdjacentPieces, highlightValidMoves } = useStore();
+ * const { initializeBoard, movePiece, getValidMoves } = useStore();
  *
  * initializeBoard(7, 7);
- * highlightValidMoves("0-0");
- * if (movePiece("0-0", "1-1", 1)) {
- *   convertAdjacentPieces("1-1", 1);
- * }
+ * console.log(getValidMoves("0,0"));
+ * movePiece("0,0", "1,1", 1);
  */
