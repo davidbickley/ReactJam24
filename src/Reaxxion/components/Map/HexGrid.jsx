@@ -12,10 +12,7 @@ const HexGrid = React.memo(({ onHexClick }) => {
   console.log("board size:", board.size);
   console.log("boardSize:", boardSize);
 
-  console.log("Board entries:");
-  board.forEach((value, key) => {
-    // console.log(`Key: ${key}, Value: ${board.get(key)}`);
-  });
+  console.log("Board entries: " + [...board.keys()] + [...board.values()]);
 
   const hexagons = useMemo(() => {
     if (!mapStorage || !mapLayout || !mapLayout.size || !board) {

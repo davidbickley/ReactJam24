@@ -97,15 +97,16 @@ export const createBoardSlice = (set, get) => ({
 
     if (validMoves.includes(toKey)) {
       const newBoard = new Map(board);
-      newBoard.set(toKey, player);
-
+      
       const distance = calculateDistance(fromKey, toKey);
       if (distance === 2) {
         // For jump moves, remove the piece from the original position
-        newBoard.delete(fromKey);
+        // For adjacent moves (distance === 1), keep the original piece
+        newBoard.set(fromKey, 0);
       }
-      // For adjacent moves (distance === 1), keep the original piece
 
+      newBoard.set(toKey, player);
+      
       set({ board: newBoard });
       return true;
     }
