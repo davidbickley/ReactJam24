@@ -43,11 +43,9 @@ export const createBoardSlice = (set, get) => ({
       new Point((width * hexSize) / 2, (height * hexSize) / 2)
     );
 
-    // Initialize maps for storage and player ownership
     const newStorage = new Map();
     const newBoard = new Map();
 
-    // Calculate the radius of the hexagonal board
     const radius = Math.floor(Math.min(width, height) / 2);
 
     // Generate hexes in a hexagonal pattern
@@ -62,9 +60,33 @@ export const createBoardSlice = (set, get) => ({
       }
     }
 
-    // Set initial player positions (corners of the board)
-    newBoard.set(`${-radius},${radius}`, 1); // Player 1 gets top-left
-    newBoard.set(`${radius},${-radius}`, 2); // Player 2 gets bottom-right
+    // Function to find the valid hex closest to a corner
+    const findCornerHex = (q, r) => {
+      const cornerHex = new Hex(q, r, -q - r);
+      let closest = null;
+      let minDistance = Infinity;
+
+      for (const [key, hex] of newStorage) {
+        const distance = cornerHex.distance(hex);
+        if (distance < minDistance) {
+          minDistance = distance;
+          closest = key;
+        }
+      }
+
+      return closest;
+    };
+
+    // Set initial player positions in the corners
+    const topLeft = findCornerHex(-radius, radius);
+    const bottomRight = findCornerHex(radius, -radius);
+    const topRight = findCornerHex(radius, 0);
+    const bottomLeft = findCornerHex(-radius, 0);
+
+    newBoard.set(topLeft, 1); // Player 1: top-left corner
+    newBoard.set(bottomLeft, 1); // Player 1: bottom-left corner
+    newBoard.set(topRight, 2); // Player 2: top-right corner
+    newBoard.set(bottomRight, 2); // Player 2: bottom-right corner
 
     console.log("Initialized board:", newBoard);
 
