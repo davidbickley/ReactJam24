@@ -43,26 +43,28 @@ export const createBoardSlice = (set, get) => ({
       new Point((width * hexSize) / 2, (height * hexSize) / 2)
     );
 
-    // Initialize a map to be given to the mapStorage state value
+    // Initialize maps for storage and player ownership
     const newStorage = new Map();
-
-    // Initialize a map of coordinates to player ownership
     const newBoard = new Map();
 
-    // Temporary hard-coded map formation algorithm
-    for (let q = 0; q < height; q++) {
-      for (let r = 0; r < width; r++) {
+    // Calculate the radius of the hexagonal board
+    const radius = Math.floor(Math.min(width, height) / 2);
+
+    // Generate hexes in a hexagonal pattern
+    for (let q = -radius; q <= radius; q++) {
+      const r1 = Math.max(-radius, -q - radius);
+      const r2 = Math.min(radius, -q + radius);
+      for (let r = r1; r <= r2; r++) {
+        const hex = new Hex(q, r, -q - r);
         const key = `${q},${r}`;
-        newStorage.set(key, new Hex(q, r, -q - r));
-        // Initialize all hexes as unowned (0)
-        newBoard.set(key, 0);
+        newStorage.set(key, hex);
+        newBoard.set(key, 0); // Initialize all hexes as unowned (0)
       }
     }
 
-    // Temporarily hard-coded board player setter
-    // Player 1 gets the first space, player 2 gets the last space
-    newBoard.set("0,0", 1);
-    newBoard.set(`${height - 1},${width - 1}`, 2);
+    // Set initial player positions (corners of the board)
+    newBoard.set(`${-radius},${radius}`, 1); // Player 1 gets top-left
+    newBoard.set(`${radius},${-radius}`, 2); // Player 2 gets bottom-right
 
     console.log("Initialized board:", newBoard);
 
@@ -70,7 +72,7 @@ export const createBoardSlice = (set, get) => ({
       mapLayout: newLayout,
       mapStorage: newStorage,
       board: newBoard,
-      boardSize: { width, height },
+      boardSize: { width: radius * 2 + 1, height: radius * 2 + 1 },
     });
   },
 
@@ -97,16 +99,19 @@ export const createBoardSlice = (set, get) => ({
 
     if (validMoves.includes(toKey)) {
       const newBoard = new Map(board);
-      
-      const distance = calculateDistance(fromKey, toKey);
+      newBoard.set(toKey, player);
+
+      const [fromQ, fromR] = fromKey.split(",").map(Number);
+      const [toQ, toR] = toKey.split(",").map(Number);
+      const fromHex = new Hex(fromQ, fromR, -fromQ - fromR);
+      const toHex = new Hex(toQ, toR, -toQ - toR);
+      const distance = fromHex.distance(toHex);
+
       if (distance === 2) {
         // For jump moves, remove the piece from the original position
-        // For adjacent moves (distance === 1), keep the original piece
         newBoard.set(fromKey, 0);
       }
 
-      newBoard.set(toKey, player);
-      
       set({ board: newBoard });
       return true;
     }
@@ -119,18 +124,16 @@ export const createBoardSlice = (set, get) => ({
    * @returns {string[]} Array of valid move positions
    */
   getValidMoves: (hexKey) => {
-    const { board, mapStorage, boardSize } = get();
+    const { board, mapStorage } = get();
     const [q, r] = hexKey.split(",").map(Number);
     const originHex = new Hex(q, r, -q - r);
 
-    return [...mapStorage.keys()].filter((key) => {
+    return Array.from(mapStorage.keys()).filter((key) => {
       if (key === hexKey) return false; // Can't move to the same position
       const [targetQ, targetR] = key.split(",").map(Number);
       const targetHex = new Hex(targetQ, targetR, -targetQ - targetR);
       const distance = originHex.distance(targetHex);
-      return (
-        isValidHex(key, boardSize) && board.get(key) === 0 && distance <= 2
-      );
+      return board.get(key) === 0 && distance <= 2;
     });
   },
 
@@ -140,15 +143,22 @@ export const createBoardSlice = (set, get) => ({
    * @param {number} player - The current player
    */
   convertAdjacentPieces: (hexKey, player) => {
-    const { board, boardSize } = get();
+    const { board, mapStorage } = get();
     const newBoard = new Map(board);
+    const [q, r] = hexKey.split(",").map(Number);
+    const hex = new Hex(q, r, -q - r);
     const opponentPlayer = player === 1 ? 2 : 1;
 
-    for (const neighborKey of getNeighbors(hexKey, boardSize)) {
-      if (board.get(neighborKey) === opponentPlayer) {
+    Hex.directions.forEach((direction) => {
+      const neighborHex = hex.add(direction);
+      const neighborKey = `${neighborHex.q},${neighborHex.r}`;
+      if (
+        mapStorage.has(neighborKey) &&
+        board.get(neighborKey) === opponentPlayer
+      ) {
         newBoard.set(neighborKey, player);
       }
-    }
+    });
 
     set({ board: newBoard });
   },

@@ -19,28 +19,28 @@ const GameMap = () => {
     initViewportListeners,
     getBoardSize,
     needsBoardReset,
-    selectedHex
+    selectedHex,
   } = useGameStore();
 
   useEffect(() => {
-    initializeGame();
+    initializeGame(viewport.width, viewport.height);
     const cleanupViewportListeners = initViewportListeners();
     return () => {
       cleanupViewportListeners();
     };
-  }, [initializeGame, initViewportListeners]);
+  }, [initializeGame, initViewportListeners, viewport]);
 
   useEffect(() => {
     const newBoardSize = getBoardSize();
     if (needsBoardReset(newBoardSize)) {
-      initializeGame();
+      initializeGame(viewport.width, viewport.height);
     }
   }, [viewport, getBoardSize, needsBoardReset, initializeGame]);
 
   const handleHexClick = useCallback(
     (hexKey) => {
       if (gameStatus === "playing") {
-        console.log(`Handling hex selection! hexKey: ${hexKey.q},${hexKey.r}`)
+        console.log(`Handling hex selection! hexKey: ${hexKey.q},${hexKey.r}`);
         handleHexSelection(`${hexKey.q},${hexKey.r}`);
       }
     },
@@ -74,9 +74,7 @@ const GameMap = () => {
         <span>
           Board: {boardSize.width}x{boardSize.height}
         </span>
-        <span>
-          Selected hex: {selectedHex}
-        </span>
+        <span>Selected hex: {selectedHex}</span>
       </div>
       {gameStatus === "finished" ? (
         <div style={{ height: "20px", textAlign: "center" }}>
